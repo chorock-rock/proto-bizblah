@@ -32,18 +32,23 @@ BIZBLAH 프로젝트에서 Firebase Google 로그인을 사용하기 위한 설�
 
 ## 5. 프로젝트에 Firebase 설정 적용
 
-`src/firebase.js` 파일을 열고 아래 값들을 Firebase Console에서 받은 실제 값으로 교체하세요:
+프로젝트 루트 디렉토리에 `.env` 파일을 생성하고 Firebase Console에서 받은 실제 값으로 채워주세요:
 
-```javascript
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
-};
+1. `.env.example` 파일을 참고하여 `.env` 파일을 생성합니다.
+2. Firebase Console에서 받은 설정 값을 `.env` 파일에 입력합니다:
+
+```env
+VITE_FIREBASE_API_KEY=your_actual_api_key
+VITE_FIREBASE_AUTH_DOMAIN=your_actual_auth_domain
+VITE_FIREBASE_PROJECT_ID=your_actual_project_id
+VITE_FIREBASE_STORAGE_BUCKET=your_actual_storage_bucket
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_actual_messaging_sender_id
+VITE_FIREBASE_APP_ID=your_actual_app_id
 ```
+
+**참고**: Vite에서는 환경 변수에 `VITE_` 접두사가 필요합니다. 이 접두사가 붙은 변수만 클라이언트 코드에서 접근할 수 있습니다.
+
+**중요**: `.env` 파일은 `.gitignore`에 포함되어 있어 Git에 커밋되지 않습니다. 실제 값은 직접 입력해야 합니다.
 
 ## 6. 인증된 도메인 추가 (배포 시)
 
@@ -53,9 +58,11 @@ const firebaseConfig = {
 
 ## 보안 주의사항
 
-- `firebase.js` 파일의 설정 값은 클라이언트에 노출되므로 공개되어도 안전합니다.
+- Firebase 설정 값은 클라이언트에 노출되므로 공개되어도 안전합니다.
 - 하지만 Firebase Console에서 API 키 제한을 설정하는 것을 권장합니다.
 - Firestore 보안 규칙을 적절히 설정하여 데이터를 보호하세요.
+- `.env` 파일은 절대 Git에 커밋하지 마세요. `.gitignore`에 이미 포함되어 있습니다.
+- 프로덕션 환경에서는 별도의 환경 변수 설정이 필요할 수 있습니다.
 
 ## 문제 해결
 

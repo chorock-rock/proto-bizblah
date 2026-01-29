@@ -3,7 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import './Login.css';
 
 const Login = () => {
-  const { signInWithGoogle } = useAuth();
+  const { signInWithGoogle, selectedBrand, getBrandLabel } = useAuth();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -29,10 +29,19 @@ const Login = () => {
         </div>
         
         <div className="login-content">
+          {selectedBrand && (
+            <div className="selected-brand-info">
+              <span className="brand-badge">{getBrandLabel()}</span>
+            </div>
+          )}
+          
           <p className="description">
-            프랜차이즈 점주들을 위한 익명 커뮤니티입니다.
+            {selectedBrand 
+              ? `${getBrandLabel()} 점주님, 안녕하세요!`
+              : '프랜차이즈 점주들을 위한 익명 커뮤니티입니다.'
+            }
             <br />
-            안전하고 자유로운 소통 공간을 제공합니다.
+            Google 계정으로 로그인하여 시작하세요.
           </p>
           
           {error && <div className="error-message">{error}</div>}
