@@ -2,7 +2,7 @@ import { useAuth } from '../contexts/AuthContext';
 import './Header.css';
 
 const Header = () => {
-  const { currentUser, logout } = useAuth();
+  const { currentUser, logout, getNickname } = useAuth();
 
   const handleLogout = async () => {
     try {
@@ -20,12 +20,7 @@ const Header = () => {
           {currentUser && (
             <>
               <div className="user-info">
-                <img 
-                  src={currentUser.photoURL || '/default-avatar.png'} 
-                  alt="프로필" 
-                  className="user-avatar"
-                />
-                <span className="user-name">{currentUser.displayName || '익명'}</span>
+                <span className="user-name">{getNickname()}</span>
               </div>
               <button className="logout-button" onClick={handleLogout}>
                 로그아웃

@@ -31,3 +31,18 @@
     font-size: 14px;
   }
 }
+
+@media (max-width: 480px) {
+  .greeting-section {
+    padding: 20px 12px;
+  }
+  
+  .greeting-text {
+    font-size: 20px;
+    line-height: 1.4;
+  }
+  
+  .greeting-subtitle {
+    font-size: 13px;
+  }
+}

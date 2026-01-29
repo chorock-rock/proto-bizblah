@@ -4,7 +4,8 @@ import {
   signOut, 
   onAuthStateChanged 
 } from 'firebase/auth';
-import { auth, googleProvider } from '../firebase';
+import { auth, googleProvider, db } from '../firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
 const BRAND_LABELS = {
   megacoffee: '메가커피',
@@ -27,11 +28,13 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
   const [selectedBrand, setSelectedBrand] = useState(() => {
     // 로컬 스토리지에서 브랜드 정보 불러오기
     return localStorage.getItem('selectedBrand') || null;
   });
   const [loading, setLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(false);
 
   // 브랜드 선택 저장
   const selectBrand = (brand) => {
@@ -67,10 +70,46 @@ export const AuthProvider = ({ children }) => {
     return selectedBrand ? BRAND_LABELS[selectedBrand] || '점주' : '점주';
   };
 
+  // 사용자 프로필 가져오기
+  const fetchUserProfile = async (userId) => {
+    if (!userId) {
+      setUserProfile(null);
+      return;
+    }
+
+    try {
+      setProfileLoading(true);
+      const profileDoc = await getDoc(doc(db, 'users', userId));
+      if (profileDoc.exists()) {
+        setUserProfile(profileDoc.data());
+      } else {
+        setUserProfile(null);
+      }
+    } catch (error) {
+      console.error('프로필 가져오기 오류:', error);
+      setUserProfile(null);
+    } finally {
+      setProfileLoading(false);
+    }
+  };
+
+  // 닉네임 가져오기
+  const getNickname = () => {
+    if (userProfile?.nickname) {
+      return userProfile.nickname;
+    }
+    return '익명';
+  };
+
   // 인증 상태 변경 감지
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
+      if (user) {
+        await fetchUserProfile(user.uid);
+      } else {
+        setUserProfile(null);
+      }
       setLoading(false);
     });
 
@@ -79,11 +118,15 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     currentUser,
+    userProfile,
     selectedBrand,
     selectBrand,
     signInWithGoogle,
     logout,
-    getBrandLabel
+    getBrandLabel,
+    getNickname,
+    fetchUserProfile,
+    profileLoading
   };
 
   return (

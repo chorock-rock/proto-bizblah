@@ -153,9 +153,13 @@
   transform: none;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
+  .brand-selection-container {
+    padding: 16px;
+  }
+  
   .brand-selection-card {
-    padding: 32px 24px;
+    padding: 36px 28px;
   }
   
   .logo {
@@ -163,6 +167,50 @@
   }
   
   .question {
+    font-size: 22px;
+  }
+  
+  .brand-select {
+    font-size: 16px; /* iOS 줌 방지 */
+  }
+}
+
+@media (max-width: 480px) {
+  .brand-selection-container {
+    padding: 12px;
+  }
+  
+  .brand-selection-card {
+    padding: 28px 20px;
+  }
+  
+  .logo {
+    font-size: 32px;
+  }
+  
+  .question {
     font-size: 20px;
+  }
+  
+  .description {
+    font-size: 14px;
+  }
+  
+  .brand-selection-content {
+    gap: 20px;
+  }
+  
+  .brand-form {
+    gap: 12px;
+  }
+  
+  .brand-select {
+    padding: 12px 14px;
+    font-size: 16px; /* iOS 줌 방지 */
+  }
+  
+  .next-button {
+    padding: 12px 20px;
+    font-size: 15px;
   }
 }

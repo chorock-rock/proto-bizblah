@@ -36,14 +36,6 @@
 .user-info {
   display: flex;
   align-items: center;
-  gap: 10px;
-}
-
-.user-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: 2px solid #e0e0e0;
 }
 
 .user-name {
@@ -79,5 +71,29 @@
   
   .user-name {
     display: none;
+  }
+  
+  .logout-button {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-content {
+    padding: 10px 12px;
+  }
+  
+  .header-logo {
+    font-size: 18px;
+  }
+  
+  .header-user {
+    gap: 8px;
+  }
+  
+  .logout-button {
+    padding: 6px 10px;
+    font-size: 12px;
   }
 }
