@@ -1,0 +1,177 @@
+.business-number-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--color-bg-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+}
+
+.business-number-modal {
+  background: var(--color-bg-primary);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.business-number-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  padding: 4px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.business-number-close:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+.business-number-content {
+  padding: 32px 24px 24px;
+}
+
+.business-number-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 8px 0;
+  text-align: center;
+}
+
+.business-number-description {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin: 0 0 24px 0;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.business-number-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.business-number-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.business-number-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid var(--color-border-primary);
+  border-radius: 8px;
+  font-size: 16px;
+  font-family: 'Pretendard', sans-serif;
+  background: var(--color-bg-primary);
+  color: var(--color-text-black);
+  transition: border-color 0.2s ease;
+  text-align: center;
+  letter-spacing: 2px;
+}
+
+.business-number-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.business-number-input:disabled {
+  background: var(--color-bg-secondary);
+  cursor: not-allowed;
+}
+
+.business-number-error {
+  font-size: 13px;
+  color: var(--color-error-text);
+  text-align: center;
+  padding: 4px 0;
+}
+
+.business-number-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.business-number-submit {
+  width: 100%;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: 'Pretendard', sans-serif;
+  background: linear-gradient(135deg, var(--color-primary-gradient-start) 0%, var(--color-primary-gradient-end) 100%);
+  color: var(--color-text-white);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.business-number-submit:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-primary);
+}
+
+.business-number-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+@media (max-width: 480px) {
+  .business-number-overlay {
+    padding: 16px;
+  }
+  
+  .business-number-modal {
+    max-width: 100%;
+  }
+  
+  .business-number-content {
+    padding: 24px 20px 20px;
+  }
+  
+  .business-number-title {
+    font-size: 18px;
+  }
+  
+  .business-number-description {
+    font-size: 13px;
+  }
+  
+  .business-number-input {
+    font-size: 16px; /* iOS 줌 방지 */
+  }
+}

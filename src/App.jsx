@@ -12,12 +12,14 @@ import NicknameSetup from './components/NicknameSetup';
 import PostDetailPage from './components/PostDetailPage';
 import AdminLogin from './components/AdminLogin';
 import AdminDashboard from './components/AdminDashboard';
+import BusinessNumberModal from './components/BusinessNumberModal';
 import './App.css';
 
 function AppContent() {
   const { currentUser, selectedBrand, selectBrand, userProfile, profileLoading, fetchUserProfile } = useAuth();
   const [showNicknameSetup, setShowNicknameSetup] = useState(false);
   const [currentView, setCurrentView] = useState('all');
+  const [showBusinessNumberModal, setShowBusinessNumberModal] = useState(false);
 
   useEffect(() => {
     if (currentUser && !profileLoading) {
@@ -52,6 +54,47 @@ function AppContent() {
       });
     }
   }, [location.pathname]);
+
+  // 스크롤 이벤트 감지
+  useEffect(() => {
+    if (!currentUser || !selectedBrand || profileLoading || showNicknameSetup || showBusinessNumberModal) {
+      return;
+    }
+
+    // userProfile의 businessNumber 확인 (localStorage는 신뢰하지 않음)
+    const isVerified = userProfile?.businessNumber;
+    if (isVerified) {
+      return; // 이미 검증됨
+    }
+
+    const handleScroll = () => {
+      // 스크롤이 발생했고 아직 모달이 표시되지 않았으면
+      if (!showBusinessNumberModal) {
+        setShowBusinessNumberModal(true);
+      }
+    };
+
+    // 스크롤 이벤트 리스너 추가
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('wheel', handleScroll, { passive: true });
+    window.addEventListener('touchmove', handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('wheel', handleScroll);
+      window.removeEventListener('touchmove', handleScroll);
+    };
+  }, [currentUser, selectedBrand, profileLoading, showNicknameSetup, showBusinessNumberModal, userProfile]);
+
+  const handleBusinessNumberVerify = async (verified) => {
+    if (verified) {
+      setShowBusinessNumberModal(false);
+      // 프로필 다시 불러오기
+      if (currentUser) {
+        await fetchUserProfile(currentUser.uid);
+      }
+    }
+  };
 
   return (
     <Routes>
@@ -115,6 +158,12 @@ function AppContent() {
               <>
                 <Header currentView={currentView} onViewChange={setCurrentView} />
                 <MainContent currentView={currentView} />
+                {showBusinessNumberModal && (
+                  <BusinessNumberModal
+                    onVerify={handleBusinessNumberVerify}
+                    onClose={() => setShowBusinessNumberModal(false)}
+                  />
+                )}
               </>
             )}
           </>
