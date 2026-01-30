@@ -60,9 +60,6 @@ const PostEdit = ({ post, onClose, onSuccess }) => {
     <div className="post-write-overlay" onClick={onClose}>
       <div className="post-write-modal" onClick={(e) => e.stopPropagation()}>
         <button className="close-button" onClick={onClose}>×</button>
-        <div className="post-write-header">
-          <h2>글 수정</h2>
-        </div>
         
         <form onSubmit={handleSubmit} className="post-write-form">
           {error && <div className="error-message">{error}</div>}
