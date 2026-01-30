@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { db } from '../firebase';
+import { db, analytics } from '../firebase';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { logEvent } from 'firebase/analytics';
 import './PostWrite.css';
 
 const PostEdit = ({ post, onClose, onSuccess }) => {
@@ -45,6 +46,13 @@ const PostEdit = ({ post, onClose, onSuccess }) => {
         content: content.trim(),
         updatedAt: serverTimestamp()
       });
+
+      // 글 수정 이벤트 추적
+      if (analytics) {
+        logEvent(analytics, 'post_edit', {
+          post_id: post.id
+        });
+      }
 
       onSuccess?.();
       onClose();

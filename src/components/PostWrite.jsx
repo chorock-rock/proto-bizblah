@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { db } from '../firebase';
+import { db, analytics } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { logEvent } from 'firebase/analytics';
 import './PostWrite.css';
 
 const PostWrite = ({ onClose, onSuccess }) => {
@@ -28,7 +29,7 @@ const PostWrite = ({ onClose, onSuccess }) => {
       setError('');
       setLoading(true);
 
-      await addDoc(collection(db, 'posts'), {
+      const docRef = await addDoc(collection(db, 'posts'), {
         title: title.trim(),
         content: content.trim(),
         authorId: currentUser.uid,
@@ -40,6 +41,14 @@ const PostWrite = ({ onClose, onSuccess }) => {
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       });
+
+      // 글 작성 이벤트 추적
+      if (analytics) {
+        logEvent(analytics, 'post_create', {
+          post_id: docRef.id,
+          brand: getBrandLabel()
+        });
+      }
 
       setTitle('');
       setContent('');

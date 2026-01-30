@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { db } from '../firebase';
+import { db, analytics } from '../firebase';
 import { collection, query, orderBy, onSnapshot, addDoc, doc, setDoc, updateDoc, increment, getDoc, getDocs } from 'firebase/firestore';
 import { serverTimestamp } from 'firebase/firestore';
+import { logEvent } from 'firebase/analytics';
 import './Comment.css';
 
 const Comment = ({ comment, postId, currentUser }) => {
@@ -84,6 +85,15 @@ const Comment = ({ comment, postId, currentUser }) => {
           likes: increment(-1)
         });
         setLiked(false);
+        
+        // 댓글 좋아요 취소 이벤트 추적
+        if (analytics) {
+          logEvent(analytics, 'comment_unlike', {
+            post_id: postId,
+            comment_id: comment.id,
+            content_type: 'comment'
+          });
+        }
       } else {
         // 좋아요 추가
         await setDoc(likeRef, {
@@ -95,6 +105,15 @@ const Comment = ({ comment, postId, currentUser }) => {
           likes: increment(1)
         });
         setLiked(true);
+        
+        // 댓글 좋아요 이벤트 추적
+        if (analytics) {
+          logEvent(analytics, 'comment_like', {
+            post_id: postId,
+            comment_id: comment.id,
+            content_type: 'comment'
+          });
+        }
       }
     } catch (error) {
       console.error('좋아요 오류:', error);
@@ -108,7 +127,7 @@ const Comment = ({ comment, postId, currentUser }) => {
 
     try {
       setSubmittingReply(true);
-      await addDoc(collection(db, 'posts', postId, 'comments', comment.id, 'replies'), {
+      const replyRef = await addDoc(collection(db, 'posts', postId, 'comments', comment.id, 'replies'), {
         content: replyText.trim(),
         authorId: currentUser.uid,
         authorName: getNickname(),
@@ -118,6 +137,15 @@ const Comment = ({ comment, postId, currentUser }) => {
       await updateDoc(doc(db, 'posts', postId, 'comments', comment.id), {
         repliesCount: increment(1)
       });
+
+      // 대댓글 작성 이벤트 추적
+      if (analytics) {
+        logEvent(analytics, 'reply_create', {
+          post_id: postId,
+          comment_id: comment.id,
+          reply_id: replyRef.id
+        });
+      }
 
       setReplyText('');
       setShowReplyForm(false);

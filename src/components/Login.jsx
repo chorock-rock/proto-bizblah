@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { analytics } from '../firebase';
+import { logEvent } from 'firebase/analytics';
 import './Login.css';
 
 const Login = () => {
@@ -12,9 +14,25 @@ const Login = () => {
       setError('');
       setLoading(true);
       await signInWithGoogle();
+      
+      // 로그인 성공 이벤트 추적
+      if (analytics) {
+        logEvent(analytics, 'login', {
+          method: 'google',
+          brand: selectedBrand || 'unknown'
+        });
+      }
     } catch (err) {
       setError('로그인에 실패했습니다. 다시 시도해주세요.');
       console.error(err);
+      
+      // 로그인 실패 이벤트 추적
+      if (analytics) {
+        logEvent(analytics, 'login_failure', {
+          method: 'google',
+          error: err.message
+        });
+      }
     } finally {
       setLoading(false);
     }

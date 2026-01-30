@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { analytics } from './firebase';
+import { logEvent } from 'firebase/analytics';
 import BrandSelection from './components/BrandSelection';
 import Login from './components/Login';
 import Header from './components/Header';
@@ -37,6 +39,16 @@ function AppContent() {
 
   const location = useLocation();
   const isPostDetailPage = location.pathname.startsWith('/post/');
+
+  // 페이지뷰 추적
+  useEffect(() => {
+    if (analytics) {
+      logEvent(analytics, 'page_view', {
+        page_path: location.pathname,
+        page_title: document.title
+      });
+    }
+  }, [location.pathname]);
 
   return (
     <Routes>

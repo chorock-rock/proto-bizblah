@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { db } from '../firebase';
+import { db, analytics } from '../firebase';
 import { doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, increment, collection, query, orderBy, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
+import { logEvent } from 'firebase/analytics';
 import Comment from './Comment';
 import PostEdit from './PostEdit';
 import './PostDetail.css';
@@ -144,6 +145,14 @@ const PostDetail = ({ postId, onClose }) => {
           likes: increment(-1)
         });
         setLiked(false);
+        
+        // 좋아요 취소 이벤트 추적
+        if (analytics) {
+          logEvent(analytics, 'post_unlike', {
+            post_id: postId,
+            content_type: 'post'
+          });
+        }
       } else {
         // 좋아요 추가
         await setDoc(likeRef, {
@@ -155,6 +164,14 @@ const PostDetail = ({ postId, onClose }) => {
           likes: increment(1)
         });
         setLiked(true);
+        
+        // 좋아요 이벤트 추적
+        if (analytics) {
+          logEvent(analytics, 'post_like', {
+            post_id: postId,
+            content_type: 'post'
+          });
+        }
       }
     } catch (error) {
       console.error('좋아요 오류:', error);
@@ -168,7 +185,7 @@ const PostDetail = ({ postId, onClose }) => {
 
     try {
       setSubmittingComment(true);
-      await addDoc(collection(db, 'posts', postId, 'comments'), {
+      const commentRef = await addDoc(collection(db, 'posts', postId, 'comments'), {
         content: commentText.trim(),
         authorId: currentUser.uid,
         authorName: getNickname(),
@@ -180,6 +197,14 @@ const PostDetail = ({ postId, onClose }) => {
       await updateDoc(doc(db, 'posts', postId), {
         commentsCount: increment(1)
       });
+
+      // 댓글 작성 이벤트 추적
+      if (analytics) {
+        logEvent(analytics, 'comment_create', {
+          post_id: postId,
+          comment_id: commentRef.id
+        });
+      }
 
       setCommentText('');
     } catch (error) {
@@ -199,15 +224,42 @@ const PostDetail = ({ postId, onClose }) => {
           text: post?.content,
           url: url
         });
+        
+        // 공유 이벤트 추적
+        if (analytics) {
+          logEvent(analytics, 'share', {
+            method: 'native_share',
+            content_type: 'post',
+            item_id: postId
+          });
+        }
       } catch (error) {
         if (error.name !== 'AbortError') {
           navigator.clipboard.writeText(url);
           alert('링크가 클립보드에 복사되었습니다.');
+          
+          // 클립보드 복사 이벤트 추적
+          if (analytics) {
+            logEvent(analytics, 'share', {
+              method: 'clipboard',
+              content_type: 'post',
+              item_id: postId
+            });
+          }
         }
       }
     } else {
       navigator.clipboard.writeText(url);
       alert('링크가 클립보드에 복사되었습니다.');
+      
+      // 클립보드 복사 이벤트 추적
+      if (analytics) {
+        logEvent(analytics, 'share', {
+          method: 'clipboard',
+          content_type: 'post',
+          item_id: postId
+        });
+      }
     }
   };
 
@@ -221,6 +273,14 @@ const PostDetail = ({ postId, onClose }) => {
     try {
       setIsDeleting(true);
       await deleteDoc(doc(db, 'posts', postId));
+      
+      // 글 삭제 이벤트 추적
+      if (analytics) {
+        logEvent(analytics, 'post_delete', {
+          post_id: postId
+        });
+      }
+      
       alert('게시글이 삭제되었습니다.');
       onClose();
     } catch (error) {
