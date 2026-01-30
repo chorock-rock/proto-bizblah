@@ -113,7 +113,7 @@
 .back-button {
   background: none;
   border: none;
-  color: var(--color-primary);
+  color:  var(--color-primary-dark);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;

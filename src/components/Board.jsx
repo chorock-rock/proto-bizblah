@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { db } from '../firebase';
 import { collection, query, orderBy, onSnapshot, where } from 'firebase/firestore';
@@ -9,9 +9,11 @@ import './Board.css';
 const Board = ({ filter = 'all' }) => {
   const { currentUser, getBrandLabel, selectedBrand } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showWriteModal, setShowWriteModal] = useState(false);
+  const scrollRestoredRef = useRef(false);
 
   useEffect(() => {
     if (!currentUser && filter === 'my') {
@@ -107,7 +109,33 @@ const Board = ({ filter = 'all' }) => {
     return date.toLocaleDateString('ko-KR');
   };
 
+  // 스크롤 위치 저장 및 복원
+  useEffect(() => {
+    // 메인 페이지로 돌아왔을 때 스크롤 위치 복원
+    if (location.pathname === '/' && !loading && posts.length > 0) {
+      const savedScroll = sessionStorage.getItem('boardScrollPosition');
+      if (savedScroll && !scrollRestoredRef.current) {
+        scrollRestoredRef.current = true;
+        // DOM이 업데이트된 후 스크롤 복원
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            window.scrollTo({
+              top: parseInt(savedScroll, 10),
+              behavior: 'instant'
+            });
+            scrollRestoredRef.current = false;
+          });
+        });
+      }
+    } else if (location.pathname.includes('/post/')) {
+      // 게시글 상세 페이지로 이동할 때는 복원 플래그 리셋
+      scrollRestoredRef.current = false;
+    }
+  }, [location.pathname, loading, posts.length]);
+
   const handlePostClick = (postId) => {
+    // 현재 스크롤 위치 저장
+    sessionStorage.setItem('boardScrollPosition', window.scrollY.toString());
     navigate(`/post/${postId}`);
   };
 

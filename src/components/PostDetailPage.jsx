@@ -10,6 +10,8 @@ const PostDetailPage = ({ currentView = 'all', onViewChange }) => {
   const { currentUser, selectedBrand, profileLoading } = useAuth();
 
   const handleClose = () => {
+    // 스크롤 복원을 위해 이벤트 발생
+    window.dispatchEvent(new Event('restoreScroll'));
     navigate('/'); // 메인 페이지로 이동
   };
 

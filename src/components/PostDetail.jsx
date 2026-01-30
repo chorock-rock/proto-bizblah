@@ -334,7 +334,41 @@ const PostDetail = ({ postId, onClose }) => {
   return (
     <div className="post-detail-overlay" onClick={onClose}>
       <div className="post-detail-modal" onClick={(e) => e.stopPropagation()}>
-        <button className="close-button" onClick={onClose}>×</button>
+        <div className="post-detail-header">
+          <button className="back-button" onClick={onClose}>
+            <svg className="back-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+          <div className="post-detail-header-stats">
+            <span className="post-detail-views">
+              <svg className="post-detail-views-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" fill="none"/>
+              </svg>
+              {post.views || 0}
+            </span>
+            <button 
+              className={`post-detail-header-like ${liked ? 'liked' : ''} ${isAnimating ? 'animating' : ''}`}
+              onClick={handleLike}
+              aria-label="좋아요"
+            >
+              <svg className="post-detail-header-like-icon" viewBox="0 0 24 24" fill={liked ? "currentColor" : "none"} xmlns="http://www.w3.org/2000/svg">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              {isAnimating && (
+                <div className="heart-burst">
+                  <span className="heart-particle">❤️</span>
+                  <span className="heart-particle">❤️</span>
+                  <span className="heart-particle">❤️</span>
+                  <span className="heart-particle">❤️</span>
+                  <span className="heart-particle">❤️</span>
+                </div>
+              )}
+              <span className="post-detail-header-like-count">{likesCount}</span>
+            </button>
+          </div>
+        </div>
         
         <div className="post-detail-content">
           <div className="post-detail-meta">
@@ -377,52 +411,6 @@ const PostDetail = ({ postId, onClose }) => {
           </div>
           
           <div className="post-detail-body">{post.content}</div>
-          
-          <div className="post-detail-actions">
-            <button 
-              className={`like-button ${liked ? 'liked' : ''} ${isAnimating ? 'animating' : ''}`}
-              onClick={handleLike}
-            >
-              <svg className="like-icon" viewBox="0 0 24 24" fill={liked ? "currentColor" : "none"} xmlns="http://www.w3.org/2000/svg">
-                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              {isAnimating && (
-                <div className="heart-burst">
-                  <span className="heart-particle">❤️</span>
-                  <span className="heart-particle">❤️</span>
-                  <span className="heart-particle">❤️</span>
-                  <span className="heart-particle">❤️</span>
-                  <span className="heart-particle">❤️</span>
-                </div>
-              )}
-              <span className="like-count-text">{likesCount}</span>
-            </button>
-          </div>
-          
-          {/* 모바일용 플로팅 버튼 */}
-          <div className="post-detail-floating-actions">
-            <button 
-              className={`floating-like-button ${liked ? 'liked' : ''} ${isAnimating ? 'animating' : ''}`}
-              onClick={handleLike}
-              aria-label="좋아요"
-            >
-              <svg className="floating-like-icon" viewBox="0 0 24 24" fill={liked ? "currentColor" : "none"} xmlns="http://www.w3.org/2000/svg">
-                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              {isAnimating && (
-                <div className="heart-burst">
-                  <span className="heart-particle">❤️</span>
-                  <span className="heart-particle">❤️</span>
-                  <span className="heart-particle">❤️</span>
-                  <span className="heart-particle">❤️</span>
-                  <span className="heart-particle">❤️</span>
-                </div>
-              )}
-              {likesCount > 0 && (
-                <span className="floating-like-count">{likesCount}</span>
-              )}
-            </button>
-          </div>
         </div>
 
         <div className="comments-section">
