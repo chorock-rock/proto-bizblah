@@ -33,28 +33,15 @@ const Header = ({ currentView, onViewChange }) => {
     };
   }, [menuOpen]);
 
+  const handleViewChange = (view) => {
+    onViewChange(view);
+    setMenuOpen(false);
+  };
+
   return (
     <header className="header">
       <div className="header-content">
         <h1 className="header-logo">BIZBLAH</h1>
-        <nav className="header-nav">
-          {currentUser && (
-            <>
-              <button 
-                className={`nav-button ${currentView === 'all' ? 'active' : ''}`}
-                onClick={() => onViewChange('all')}
-              >
-                전체 게시판
-              </button>
-              <button 
-                className={`nav-button ${currentView === 'my' ? 'active' : ''}`}
-                onClick={() => onViewChange('my')}
-              >
-                내가 쓴 글
-              </button>
-            </>
-          )}
-        </nav>
         <div className="header-user">
           {currentUser && (
             <>
@@ -75,6 +62,19 @@ const Header = ({ currentView, onViewChange }) => {
                 </button>
                 {menuOpen && (
                   <div className="menu-dropdown">
+                    <button 
+                      className={`menu-item ${currentView === 'all' ? 'active' : ''}`}
+                      onClick={() => handleViewChange('all')}
+                    >
+                      내 브랜드 게시판
+                    </button>
+                    <button 
+                      className={`menu-item ${currentView === 'my' ? 'active' : ''}`}
+                      onClick={() => handleViewChange('my')}
+                    >
+                      내가 쓴 글
+                    </button>
+                    <div className="menu-divider"></div>
                     <button className="menu-item logout-item" onClick={handleLogout}>
                       로그아웃
                     </button>

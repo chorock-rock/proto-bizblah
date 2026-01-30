@@ -7,7 +7,7 @@ import PostWrite from './PostWrite';
 import './Board.css';
 
 const Board = ({ filter = 'all' }) => {
-  const { currentUser } = useAuth();
+  const { currentUser, getBrandLabel, selectedBrand } = useAuth();
   const navigate = useNavigate();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -15,6 +15,12 @@ const Board = ({ filter = 'all' }) => {
 
   useEffect(() => {
     if (!currentUser && filter === 'my') {
+      setPosts([]);
+      setLoading(false);
+      return;
+    }
+
+    if (!selectedBrand && filter === 'all') {
       setPosts([]);
       setLoading(false);
       return;
@@ -30,9 +36,18 @@ const Board = ({ filter = 'all' }) => {
         orderBy('createdAt', 'desc')
       );
     } else {
-      // 전체 게시글
+      // 내 브랜드 게시글만 필터링
+      const brandLabel = getBrandLabel();
+      
+      if (!brandLabel || brandLabel === '점주') {
+        setPosts([]);
+        setLoading(false);
+        return;
+      }
+      
       postsQuery = query(
         collection(db, 'posts'),
+        where('authorBrand', '==', brandLabel),
         orderBy('createdAt', 'desc')
       );
     }
@@ -45,10 +60,38 @@ const Board = ({ filter = 'all' }) => {
       }));
       setPosts(postsData);
       setLoading(false);
+    }, (error) => {
+      console.error('게시글 구독 오류:', error);
+      // 인덱스 오류인 경우 사용자에게 안내
+      if (error.code === 'failed-precondition') {
+        const errorMessage = error.message || '';
+        const indexUrlMatch = errorMessage.match(/https:\/\/console\.firebase\.google\.com[^\s]+/);
+        
+        if (indexUrlMatch) {
+          const indexUrl = indexUrlMatch[0];
+          const shouldCreate = window.confirm(
+            'Firestore 인덱스가 필요합니다.\n\n' +
+            '인덱스를 생성하시겠습니까? (새 창이 열립니다)\n\n' +
+            '또는 수동으로 Firebase Console > Firestore Database > Indexes에서 생성할 수 있습니다.'
+          );
+          
+          if (shouldCreate) {
+            window.open(indexUrl, '_blank');
+          }
+        } else {
+          alert(
+            'Firestore 인덱스가 필요합니다.\n\n' +
+            'Firebase Console > Firestore Database > Indexes에서 다음 인덱스를 생성해주세요:\n\n' +
+            'Collection: posts\n' +
+            'Fields: authorBrand (Ascending), createdAt (Descending)'
+          );
+        }
+      }
+      setLoading(false);
     });
 
     return () => unsubscribe();
-  }, [filter, currentUser]);
+  }, [filter, currentUser, selectedBrand]);
 
   const formatDate = (date) => {
     const now = new Date();
