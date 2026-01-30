@@ -1,7 +1,7 @@
 .header {
-  background: white;
-  border-bottom: 1px solid #e0e0e0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  background: var(--color-bg-primary);
+  border-bottom: 1px solid var(--color-border-primary);
+  box-shadow: var(--shadow-sm);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -21,7 +21,7 @@
 .header-logo {
   font-size: 24px;
   font-weight: 700;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--color-primary-gradient-start) 0%, var(--color-primary-gradient-end) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -43,7 +43,7 @@
 .user-name {
   font-size: 14px;
   font-weight: 500;
-  color: #333;
+  color: var(--color-text-primary);
 }
 
 .menu-container {
@@ -79,7 +79,7 @@
   display: block;
   width: 100%;
   height: 2px;
-  background: #333;
+  background: var(--color-text-primary);
   border-radius: 2px;
   transition: all 0.3s ease;
 }
@@ -100,11 +100,11 @@
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  background: white;
-  border: 1px solid #e0e0e0;
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border-primary);
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  min-width: 140px;
+  box-shadow: var(--shadow-md);
+  min-width: 160px;
   overflow: hidden;
   z-index: 1000;
   animation: fadeInDown 0.2s ease-out;
@@ -129,37 +129,38 @@
   border: none;
   text-align: left;
   font-size: 14px;
-  color: #333;
+  color: var(--color-text-primary);
   cursor: pointer;
   transition: background-color 0.2s ease;
+  white-space: nowrap;
 }
 
 .menu-item:hover {
-  background: #f5f5f5;
+  background: var(--color-bg-hover);
 }
 
 .menu-item.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--color-primary-gradient-start) 0%, var(--color-primary-gradient-end) 100%);
+  color: var(--color-text-white);
 }
 
 .menu-item.active:hover {
-  background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+  background: linear-gradient(135deg, var(--color-primary-gradient-hover-start) 0%, var(--color-primary-gradient-hover-end) 100%);
 }
 
 .menu-divider {
   height: 1px;
-  background: #e0e0e0;
+  background: var(--color-border-primary);
   margin: 4px 0;
 }
 
 .logout-item {
-  color: #c33;
+  color: var(--color-error-text);
 }
 
 .logout-item:hover {
-  background: #fee;
-  color: #a00;
+  background: var(--color-error-bg);
+  color: var(--color-error-hover);
 }
 
 @media (max-width: 768px) {
@@ -186,12 +187,12 @@
   }
   
   .menu-dropdown {
-    min-width: 100px;
+    min-width: 160px;
   }
   
   .menu-item {
-    padding: 10px 14px;
-    font-size: 13px;
+    padding: 12px 16px;
+    font-size: 14px;
   }
 }
 
@@ -220,11 +221,11 @@
   }
   
   .menu-dropdown {
-    min-width: 90px;
+    min-width: 150px;
   }
   
   .menu-item {
-    padding: 10px 12px;
-    font-size: 12px;
+    padding: 12px 14px;
+    font-size: 14px;
   }
 }

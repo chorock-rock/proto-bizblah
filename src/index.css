@@ -13,6 +13,8 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* 색상 변수는 src/styles/colors.css에서 관리됩니다 */
 }
 
 * {
