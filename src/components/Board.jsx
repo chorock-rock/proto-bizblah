@@ -139,18 +139,35 @@ const Board = ({ filter = 'all' }) => {
                   className="post-item"
                   onClick={() => handlePostClick(post.id)}
                 >
-                  <div className="post-header">
-                    <h3 className="post-title">{post.title}</h3>
+                  <div className="post-meta">
+                    <span className="post-brand">{post.authorBrand}</span>
+                    <span className="post-meta-divider">|</span>
+                    <span className="post-author-name">{post.authorName}</span>
+                    <span className="post-meta-divider">|</span>
                     <span className="post-date">{formatDate(post.createdAt)}</span>
                   </div>
+                  <h3 className="post-title">{post.title}</h3>
                   <p className="post-content">{post.content}</p>
-                  <div className="post-footer">
-                    <span className="post-author">{post.authorBrand} {post.authorName}</span>
-                    <div className="post-stats">
-                      <span className="post-likes">❤️ {post.likes || 0}</span>
-                      <span className="post-comments">💬 {post.commentsCount || 0}</span>
-                      <span className="post-views">👁️ {post.views || 0}</span>
-                    </div>
+                  <div className="post-stats">
+                    <span className="post-likes">
+                      <svg className="post-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                      </svg>
+                      {post.likes || 0}
+                    </span>
+                    <span className="post-comments">
+                      <svg className="post-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                      </svg>
+                      {post.commentsCount || 0}
+                    </span>
+                    <span className="post-views">
+                      <svg className="post-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                        <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" fill="none"/>
+                      </svg>
+                      {post.views || 0}
+                    </span>
                   </div>
                 </div>
               ))}
@@ -175,7 +192,7 @@ const Board = ({ filter = 'all' }) => {
         aria-label="글쓰기"
       >
         <svg className="floating-button-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="currentColor"/>
+          <path d="M12 5V19M5 12H19" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       </button>
     </>

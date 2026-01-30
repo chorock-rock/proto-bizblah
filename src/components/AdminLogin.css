@@ -1,0 +1,138 @@
+.admin-login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg-secondary);
+  padding: 20px;
+}
+
+.admin-login-card {
+  background: var(--color-bg-primary);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+  padding: 48px 40px;
+  max-width: 420px;
+  width: 100%;
+  animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.admin-login-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.admin-logo {
+  font-size: 42px;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--color-primary-gradient-start) 0%, var(--color-primary-gradient-end) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0 0 8px 0;
+  letter-spacing: -1px;
+}
+
+.admin-subtitle {
+  color: var(--color-text-secondary);
+  font-size: 16px;
+  margin: 0;
+  font-weight: 500;
+}
+
+.admin-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.error-message {
+  background-color: var(--color-error-bg);
+  color: var(--color-error-text);
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  text-align: center;
+  border: 1px solid var(--color-error-border);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.form-group input {
+  padding: 12px;
+  border: 2px solid var(--color-border-primary);
+  border-radius: 8px;
+  font-size: 16px;
+  font-family: inherit;
+  background: var(--color-bg-primary);
+  color: var(--color-text-black);
+  transition: border-color 0.2s ease;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--color-border-focus);
+}
+
+.form-group input:disabled {
+  background: var(--color-bg-secondary);
+  cursor: not-allowed;
+}
+
+.admin-login-button {
+  width: 100%;
+  padding: 14px 24px;
+  background: linear-gradient(135deg, var(--color-primary-gradient-start) 0%, var(--color-primary-gradient-end) 100%);
+  color: var(--color-text-white);
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-login-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-primary);
+}
+
+.admin-login-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 480px) {
+  .admin-login-card {
+    padding: 32px 24px;
+  }
+  
+  .admin-logo {
+    font-size: 36px;
+  }
+  
+  .form-group input {
+    font-size: 16px; /* iOS 줌 방지 */
+  }
+}

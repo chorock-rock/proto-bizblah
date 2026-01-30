@@ -1,5 +1,5 @@
 :root {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   line-height: 1.5;
@@ -62,11 +62,6 @@ select {
 
 /* 터치 디바이스 최적화 */
 @media (hover: none) and (pointer: coarse) {
-  button,
-  a {
-    min-height: 44px;
-    min-width: 44px;
-  }
 }
 
 /* 작은 화면 최적화 */

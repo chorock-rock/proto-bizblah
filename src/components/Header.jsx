@@ -3,7 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import './Header.css';
 
 const Header = ({ currentView, onViewChange }) => {
-  const { currentUser, logout, getNickname } = useAuth();
+  const { currentUser, logout, getNickname, getBrandLabel } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
@@ -16,7 +16,7 @@ const Header = ({ currentView, onViewChange }) => {
     }
   };
 
-  // 메뉴 외부 클릭 시 닫기
+  // 메뉴 외부 클릭 시 닫기 (딤 오버레이 클릭)
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -26,10 +26,15 @@ const Header = ({ currentView, onViewChange }) => {
 
     if (menuOpen) {
       document.addEventListener('mousedown', handleClickOutside);
+      // 스크롤 방지
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.body.style.overflow = '';
     };
   }, [menuOpen]);
 
@@ -46,6 +51,7 @@ const Header = ({ currentView, onViewChange }) => {
           {currentUser && (
             <>
               <div className="user-info">
+                <span className="user-brand">{getBrandLabel()}</span>
                 <span className="user-name">{getNickname()}</span>
               </div>
               <div className="menu-container" ref={menuRef}>
@@ -61,24 +67,39 @@ const Header = ({ currentView, onViewChange }) => {
                   </span>
                 </button>
                 {menuOpen && (
-                  <div className="menu-dropdown">
-                    <button 
-                      className={`menu-item ${currentView === 'all' ? 'active' : ''}`}
-                      onClick={() => handleViewChange('all')}
-                    >
-                      내 브랜드 게시판
-                    </button>
-                    <button 
-                      className={`menu-item ${currentView === 'my' ? 'active' : ''}`}
-                      onClick={() => handleViewChange('my')}
-                    >
-                      내가 쓴 글
-                    </button>
-                    <div className="menu-divider"></div>
-                    <button className="menu-item logout-item" onClick={handleLogout}>
-                      로그아웃
-                    </button>
-                  </div>
+                  <>
+                    <div className="menu-overlay" onClick={() => setMenuOpen(false)}></div>
+                    <div className="menu-sidebar">
+                      <button 
+                        className={`menu-item ${currentView === 'all' ? 'active' : ''}`}
+                        onClick={() => handleViewChange('all')}
+                      >
+                        홈
+                      </button>
+                      <button 
+                        className={`menu-item ${currentView === 'my' ? 'active' : ''}`}
+                        onClick={() => handleViewChange('my')}
+                      >
+                        내가 쓴 글
+                      </button>
+                      <button 
+                        className={`menu-item ${currentView === 'notices' ? 'active' : ''}`}
+                        onClick={() => handleViewChange('notices')}
+                      >
+                        공지사항
+                      </button>
+                      <button 
+                        className={`menu-item ${currentView === 'suggestions' ? 'active' : ''}`}
+                        onClick={() => handleViewChange('suggestions')}
+                      >
+                        건의하기
+                      </button>
+                      <div className="menu-divider"></div>
+                      <button className="menu-item logout-item" onClick={handleLogout}>
+                        로그아웃
+                      </button>
+                    </div>
+                  </>
                 )}
               </div>
             </>

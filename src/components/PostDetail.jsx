@@ -19,6 +19,7 @@ const PostDetail = ({ postId, onClose }) => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   // 조회수 증가는 한 번만 실행 (sessionStorage 사용)
   useEffect(() => {
@@ -155,6 +156,7 @@ const PostDetail = ({ postId, onClose }) => {
         }
       } else {
         // 좋아요 추가
+        setIsAnimating(true);
         await setDoc(likeRef, {
           userId: currentUser.uid,
           createdAt: serverTimestamp(),
@@ -164,6 +166,9 @@ const PostDetail = ({ postId, onClose }) => {
           likes: increment(1)
         });
         setLiked(true);
+        
+        // 애니메이션 종료
+        setTimeout(() => setIsAnimating(false), 5000);
         
         // 좋아요 이벤트 추적
         if (analytics) {
@@ -332,6 +337,14 @@ const PostDetail = ({ postId, onClose }) => {
         <button className="close-button" onClick={onClose}>×</button>
         
         <div className="post-detail-content">
+          <div className="post-detail-meta">
+            <span className="post-detail-brand">{post.authorBrand}</span>
+            <span className="post-detail-divider">|</span>
+            <span className="post-detail-author-name">{post.authorName}</span>
+            <span className="post-detail-divider">|</span>
+            <span className="post-detail-date">{formatDate(post.createdAt)}</span>
+          </div>
+          
           <div className="post-detail-title-wrapper">
             <div className="post-detail-title">{post.title}</div>
             {isAuthor && (
@@ -340,38 +353,74 @@ const PostDetail = ({ postId, onClose }) => {
                   className="edit-button"
                   onClick={() => setShowEditModal(true)}
                   disabled={isDeleting}
+                  aria-label="수정"
                 >
-                  수정
+                  <svg className="edit-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
                 </button>
                 <button 
                   className="delete-button"
                   onClick={handleDelete}
                   disabled={isDeleting}
+                  aria-label={isDeleting ? '삭제 중' : '삭제'}
                 >
-                  {isDeleting ? '삭제 중...' : '삭제'}
+                  <svg className="delete-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <line x1="10" y1="11" x2="10" y2="17" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                    <line x1="14" y1="11" x2="14" y2="17" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                  </svg>
                 </button>
               </div>
             )}
-          </div>
-          <div className="post-detail-meta">
-            <span className="post-author">{post.authorBrand} {post.authorName}</span>
-            <span className="post-date">{formatDate(post.createdAt)}</span>
-            <span className="post-views">조회 {post.views || 0}</span>
           </div>
           
           <div className="post-detail-body">{post.content}</div>
           
           <div className="post-detail-actions">
             <button 
-              className={`like-button ${liked ? 'liked' : ''}`}
+              className={`like-button ${liked ? 'liked' : ''} ${isAnimating ? 'animating' : ''}`}
               onClick={handleLike}
             >
-              <span className="like-icon">❤️</span>
-              <span>{likesCount}</span>
+              <svg className="like-icon" viewBox="0 0 24 24" fill={liked ? "currentColor" : "none"} xmlns="http://www.w3.org/2000/svg">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              {isAnimating && (
+                <div className="heart-burst">
+                  <span className="heart-particle">❤️</span>
+                  <span className="heart-particle">❤️</span>
+                  <span className="heart-particle">❤️</span>
+                  <span className="heart-particle">❤️</span>
+                  <span className="heart-particle">❤️</span>
+                </div>
+              )}
+              <span className="like-count-text">{likesCount}</span>
             </button>
-            <button className="share-button" onClick={handleShare}>
-              <span className="share-icon">🔗</span>
-              <span>공유</span>
+          </div>
+          
+          {/* 모바일용 플로팅 버튼 */}
+          <div className="post-detail-floating-actions">
+            <button 
+              className={`floating-like-button ${liked ? 'liked' : ''} ${isAnimating ? 'animating' : ''}`}
+              onClick={handleLike}
+              aria-label="좋아요"
+            >
+              <svg className="floating-like-icon" viewBox="0 0 24 24" fill={liked ? "currentColor" : "none"} xmlns="http://www.w3.org/2000/svg">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              {isAnimating && (
+                <div className="heart-burst">
+                  <span className="heart-particle">❤️</span>
+                  <span className="heart-particle">❤️</span>
+                  <span className="heart-particle">❤️</span>
+                  <span className="heart-particle">❤️</span>
+                  <span className="heart-particle">❤️</span>
+                </div>
+              )}
+              {likesCount > 0 && (
+                <span className="floating-like-count">{likesCount}</span>
+              )}
             </button>
           </div>
         </div>

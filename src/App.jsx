@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { AdminProvider } from './contexts/AdminContext';
 import { analytics } from './firebase';
 import { logEvent } from 'firebase/analytics';
 import BrandSelection from './components/BrandSelection';
@@ -9,6 +10,8 @@ import Header from './components/Header';
 import MainContent from './components/MainContent';
 import NicknameSetup from './components/NicknameSetup';
 import PostDetailPage from './components/PostDetailPage';
+import AdminLogin from './components/AdminLogin';
+import AdminDashboard from './components/AdminDashboard';
 import './App.css';
 
 function AppContent() {
@@ -52,6 +55,28 @@ function AppContent() {
 
   return (
     <Routes>
+      {/* 관리자 페이지 */}
+      <Route 
+        path="/admin/login" 
+        element={<AdminLogin />} 
+      />
+      <Route 
+        path="/admin/posts" 
+        element={<AdminDashboard />} 
+      />
+      <Route 
+        path="/admin/notices" 
+        element={<AdminDashboard />} 
+      />
+      <Route 
+        path="/admin/suggestions" 
+        element={<AdminDashboard />} 
+      />
+      <Route 
+        path="/admin" 
+        element={<AdminDashboard />} 
+      />
+      
       {/* 게시글 상세 페이지 */}
       <Route 
         path="/post/:postId" 
@@ -102,7 +127,9 @@ function AppContent() {
 function App() {
   return (
     <AuthProvider>
-      <AppContent />
+      <AdminProvider>
+        <AppContent />
+      </AdminProvider>
     </AuthProvider>
   );
 }
