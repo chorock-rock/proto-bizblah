@@ -225,6 +225,30 @@
   animation: heartPop 0.6s ease-out;
 }
 
+.post-detail-header-share {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+.post-detail-header-share:hover {
+  background: var(--color-bg-hover);
+}
+
+.post-detail-header-share-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
 .post-detail-header-like .heart-burst {
   position: absolute;
   bottom: 0;
@@ -583,6 +607,15 @@
     height: 18px;
   }
   
+  .post-detail-header-share {
+    padding: 5px 10px;
+  }
+  
+  .post-detail-header-share-icon {
+    width: 18px;
+    height: 18px;
+  }
+  
   .post-detail-content {
     padding: 20px;
   }
@@ -720,6 +753,15 @@
   
   .post-detail-header-like-count {
     font-size: 13px;
+  }
+  
+  .post-detail-header-share {
+    padding: 4px 8px;
+  }
+  
+  .post-detail-header-share-icon {
+    width: 16px;
+    height: 16px;
   }
   
   .post-detail-content {
