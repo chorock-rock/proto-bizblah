@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { db } from '../firebase';
-import { doc, getDoc, getDocs, setDoc, updateDoc, increment, collection, query, orderBy, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, increment, collection, query, orderBy, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
 import Comment from './Comment';
+import PostEdit from './PostEdit';
 import './PostDetail.css';
 
 const PostDetail = ({ postId, onClose }) => {
@@ -14,6 +15,9 @@ const PostDetail = ({ postId, onClose }) => {
   const [likesCount, setLikesCount] = useState(0);
   const [commentText, setCommentText] = useState('');
   const [submittingComment, setSubmittingComment] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // 조회수 증가는 한 번만 실행 (sessionStorage 사용)
   useEffect(() => {
@@ -207,6 +211,33 @@ const PostDetail = ({ postId, onClose }) => {
     }
   };
 
+  const handleDelete = async () => {
+    if (!currentUser || !post || post.authorId !== currentUser.uid) return;
+    
+    if (!window.confirm('정말 이 게시글을 삭제하시겠습니까?')) {
+      return;
+    }
+
+    try {
+      setIsDeleting(true);
+      await deleteDoc(doc(db, 'posts', postId));
+      alert('게시글이 삭제되었습니다.');
+      onClose();
+    } catch (error) {
+      console.error('게시글 삭제 오류:', error);
+      alert('게시글 삭제에 실패했습니다.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleEditComplete = () => {
+    // 실시간 구독으로 자동 업데이트되므로 별도 처리 불필요
+    setShowEditModal(false);
+  };
+
+  const isAuthor = currentUser && post && post.authorId === currentUser.uid;
+
   if (loading) {
     return (
       <div className="post-detail-overlay" onClick={onClose}>
@@ -238,12 +269,30 @@ const PostDetail = ({ postId, onClose }) => {
   return (
     <div className="post-detail-overlay" onClick={onClose}>
       <div className="post-detail-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="post-detail-header">
-          <button className="close-button" onClick={onClose}>×</button>
-        </div>
+        <button className="close-button" onClick={onClose}>×</button>
         
         <div className="post-detail-content">
-          <div className="post-detail-title">{post.title}</div>
+          <div className="post-detail-title-wrapper">
+            <div className="post-detail-title">{post.title}</div>
+            {isAuthor && (
+              <div className="post-owner-actions">
+                <button 
+                  className="edit-button"
+                  onClick={() => setShowEditModal(true)}
+                  disabled={isDeleting}
+                >
+                  수정
+                </button>
+                <button 
+                  className="delete-button"
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                >
+                  {isDeleting ? '삭제 중...' : '삭제'}
+                </button>
+              </div>
+            )}
+          </div>
           <div className="post-detail-meta">
             <span className="post-author">{post.authorBrand} {post.authorName}</span>
             <span className="post-date">{formatDate(post.createdAt)}</span>
@@ -297,6 +346,14 @@ const PostDetail = ({ postId, onClose }) => {
           )}
         </div>
       </div>
+
+      {showEditModal && post && (
+        <PostEdit
+          post={post}
+          onClose={() => setShowEditModal(false)}
+          onSuccess={handleEditComplete}
+        />
+      )}
     </div>
   );
 };

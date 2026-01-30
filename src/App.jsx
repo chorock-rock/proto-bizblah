@@ -1,15 +1,18 @@
 import { useState, useEffect } from 'react';
+import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import BrandSelection from './components/BrandSelection';
 import Login from './components/Login';
 import Header from './components/Header';
 import MainContent from './components/MainContent';
 import NicknameSetup from './components/NicknameSetup';
+import PostDetailPage from './components/PostDetailPage';
 import './App.css';
 
 function AppContent() {
   const { currentUser, selectedBrand, selectBrand, userProfile, profileLoading, fetchUserProfile } = useAuth();
   const [showNicknameSetup, setShowNicknameSetup] = useState(false);
+  const [currentView, setCurrentView] = useState('all');
 
   useEffect(() => {
     if (currentUser && !profileLoading) {
@@ -32,36 +35,55 @@ function AppContent() {
     setShowNicknameSetup(false);
   };
 
-  // 로그인한 사용자는 브랜드 선택 화면을 볼 수 없음
-  // 로그인 전에만 브랜드 선택 가능
-  if (!currentUser) {
-    if (!selectedBrand) {
-      return <BrandSelection onSelect={selectBrand} />;
-    }
-    return <Login />;
-  }
+  const location = useLocation();
+  const isPostDetailPage = location.pathname.startsWith('/post/');
 
-  // 로그인 후 프로필 로딩 중
-  if (profileLoading) {
-    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>로딩 중...</div>;
-  }
-
-  // 닉네임 설정 단계
-  if (showNicknameSetup) {
-    return <NicknameSetup onComplete={handleNicknameComplete} />;
-  }
-
-  // 브랜드가 없으면 대기 (프로필에서 브랜드를 가져오는 중)
-  if (!selectedBrand) {
-    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>로딩 중...</div>;
-  }
-
-  // 메인 화면
   return (
-    <>
-      <Header />
-      <MainContent />
-    </>
+    <Routes>
+      {/* 게시글 상세 페이지 */}
+      <Route 
+        path="/post/:postId" 
+        element={
+          currentUser && selectedBrand ? (
+            <PostDetailPage currentView={currentView} onViewChange={setCurrentView} />
+          ) : (
+            <Navigate to="/" replace />
+          )
+        } 
+      />
+      
+      {/* 메인 앱 라우트 */}
+      <Route
+        path="/*"
+        element={
+          <>
+            {/* 로그인한 사용자는 브랜드 선택 화면을 볼 수 없음 */}
+            {!currentUser ? (
+              !selectedBrand ? (
+                <BrandSelection onSelect={selectBrand} />
+              ) : (
+                <Login />
+              )
+            ) : profileLoading ? (
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+                로딩 중...
+              </div>
+            ) : showNicknameSetup ? (
+              <NicknameSetup onComplete={handleNicknameComplete} />
+            ) : !selectedBrand ? (
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+                로딩 중...
+              </div>
+            ) : (
+              <>
+                <Header currentView={currentView} onViewChange={setCurrentView} />
+                <MainContent currentView={currentView} />
+              </>
+            )}
+          </>
+        }
+      />
+    </Routes>
   );
 }
 

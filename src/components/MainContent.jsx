@@ -1,10 +1,10 @@
 import Board from './Board';
 import './MainContent.css';
 
-const MainContent = () => {
+const MainContent = ({ currentView = 'all' }) => {
   return (
     <div className="main-content">
-      <Board />
+      <Board filter={currentView} />
     </div>
   );
 };

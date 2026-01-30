@@ -1,15 +1,22 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { db } from '../firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import './PostWrite.css';
 
-const PostWrite = ({ onClose, onSuccess }) => {
-  const { currentUser, getBrandLabel, getNickname } = useAuth();
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
+const PostEdit = ({ post, onClose, onSuccess }) => {
+  const { currentUser } = useAuth();
+  const [title, setTitle] = useState(post?.title || '');
+  const [content, setContent] = useState(post?.content || '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (post) {
+      setTitle(post.title || '');
+      setContent(post.content || '');
+    }
+  }, [post]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -24,30 +31,26 @@ const PostWrite = ({ onClose, onSuccess }) => {
       return;
     }
 
+    if (!post || post.authorId !== currentUser?.uid) {
+      setError('권한이 없습니다.');
+      return;
+    }
+
     try {
       setError('');
       setLoading(true);
 
-      await addDoc(collection(db, 'posts'), {
+      await updateDoc(doc(db, 'posts', post.id), {
         title: title.trim(),
         content: content.trim(),
-        authorId: currentUser.uid,
-        authorName: getNickname(),
-        authorBrand: getBrandLabel(),
-        views: 0,
-        likes: 0,
-        commentsCount: 0,
-        createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       });
 
-      setTitle('');
-      setContent('');
       onSuccess?.();
       onClose();
     } catch (err) {
-      console.error('글 작성 오류:', err);
-      setError('글 작성에 실패했습니다. 다시 시도해주세요.');
+      console.error('글 수정 오류:', err);
+      setError('글 수정에 실패했습니다. 다시 시도해주세요.');
     } finally {
       setLoading(false);
     }
@@ -58,7 +61,7 @@ const PostWrite = ({ onClose, onSuccess }) => {
       <div className="post-write-modal" onClick={(e) => e.stopPropagation()}>
         <button className="close-button" onClick={onClose}>×</button>
         <div className="post-write-header">
-          <h2>글쓰기</h2>
+          <h2>글 수정</h2>
         </div>
         
         <form onSubmit={handleSubmit} className="post-write-form">
@@ -94,7 +97,7 @@ const PostWrite = ({ onClose, onSuccess }) => {
               취소
             </button>
             <button type="submit" className="submit-button" disabled={loading}>
-              {loading ? '작성 중...' : '작성하기'}
+              {loading ? '수정 중...' : '수정하기'}
             </button>
           </div>
         </form>
@@ -103,4 +106,4 @@ const PostWrite = ({ onClose, onSuccess }) => {
   );
 };
 
-export default PostWrite;
+export default PostEdit;

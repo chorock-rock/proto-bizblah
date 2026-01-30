@@ -1,22 +1,41 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { db } from '../firebase';
-import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, where } from 'firebase/firestore';
 import PostWrite from './PostWrite';
-import PostDetail from './PostDetail';
 import './Board.css';
 
-const Board = () => {
+const Board = ({ filter = 'all' }) => {
+  const { currentUser } = useAuth();
+  const navigate = useNavigate();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showWriteModal, setShowWriteModal] = useState(false);
-  const [selectedPostId, setSelectedPostId] = useState(null);
 
   useEffect(() => {
+    if (!currentUser && filter === 'my') {
+      setPosts([]);
+      setLoading(false);
+      return;
+    }
+
     // 게시글 실시간 구독
-    const postsQuery = query(
-      collection(db, 'posts'),
-      orderBy('createdAt', 'desc')
-    );
+    let postsQuery;
+    if (filter === 'my' && currentUser) {
+      // 내가 쓴 글만 필터링
+      postsQuery = query(
+        collection(db, 'posts'),
+        where('authorId', '==', currentUser.uid),
+        orderBy('createdAt', 'desc')
+      );
+    } else {
+      // 전체 게시글
+      postsQuery = query(
+        collection(db, 'posts'),
+        orderBy('createdAt', 'desc')
+      );
+    }
 
     const unsubscribe = onSnapshot(postsQuery, (snapshot) => {
       const postsData = snapshot.docs.map(doc => ({
@@ -29,7 +48,7 @@ const Board = () => {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [filter, currentUser]);
 
   const formatDate = (date) => {
     const now = new Date();
@@ -46,7 +65,7 @@ const Board = () => {
   };
 
   const handlePostClick = (postId) => {
-    setSelectedPostId(postId);
+    navigate(`/post/${postId}`);
   };
 
   return (
@@ -59,8 +78,15 @@ const Board = () => {
             </div>
           ) : posts.length === 0 ? (
             <div className="empty-board">
-              <p>아직 게시글이 없습니다.</p>
-              <p>첫 번째 게시글을 작성해보세요!</p>
+              <p>
+                {filter === 'my' 
+                  ? '작성한 게시글이 없습니다.' 
+                  : '아직 게시글이 없습니다.'
+                }
+              </p>
+              {filter === 'all' && (
+                <p>첫 번째 게시글을 작성해보세요!</p>
+              )}
             </div>
           ) : (
             <div className="posts-list">
@@ -96,13 +122,6 @@ const Board = () => {
           onSuccess={() => {
             // 글 작성 성공 시 모달 닫기
           }}
-        />
-      )}
-
-      {selectedPostId && (
-        <PostDetail
-          postId={selectedPostId}
-          onClose={() => setSelectedPostId(null)}
         />
       )}
 
