@@ -30,13 +30,13 @@ export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const [selectedBrand, setSelectedBrand] = useState(() => {
-    // 로컬 스토리지에서 브랜드 정보 불러오기
+    // 로컬 스토리지에서 브랜드 정보 불러오기 (로그인 전용)
     return localStorage.getItem('selectedBrand') || null;
   });
   const [loading, setLoading] = useState(true);
   const [profileLoading, setProfileLoading] = useState(false);
 
-  // 브랜드 선택 저장
+  // 브랜드 선택 저장 (로그인 전에만 사용)
   const selectBrand = (brand) => {
     setSelectedBrand(brand);
     localStorage.setItem('selectedBrand', brand);
@@ -56,9 +56,15 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       await signOut(auth);
-      // 로그아웃 시 브랜드 정보도 초기화
-      setSelectedBrand(null);
-      localStorage.removeItem('selectedBrand');
+      // 로그아웃 시 프로필만 초기화, 브랜드는 로컬스토리지에 유지
+      setUserProfile(null);
+      // 로컬스토리지의 브랜드는 유지하여 다음 접속 시 브랜드 선택 화면 건너뛰기
+      const savedBrand = localStorage.getItem('selectedBrand');
+      if (savedBrand) {
+        setSelectedBrand(savedBrand);
+      } else {
+        setSelectedBrand(null);
+      }
     } catch (error) {
       console.error('로그아웃 오류:', error);
       throw error;
@@ -74,6 +80,11 @@ export const AuthProvider = ({ children }) => {
   const fetchUserProfile = async (userId) => {
     if (!userId) {
       setUserProfile(null);
+      // 로그아웃 시가 아니면 로컬스토리지의 브랜드 유지
+      const savedBrand = localStorage.getItem('selectedBrand');
+      if (!savedBrand) {
+        setSelectedBrand(null);
+      }
       return;
     }
 
@@ -81,13 +92,43 @@ export const AuthProvider = ({ children }) => {
       setProfileLoading(true);
       const profileDoc = await getDoc(doc(db, 'users', userId));
       if (profileDoc.exists()) {
-        setUserProfile(profileDoc.data());
+        const profileData = profileDoc.data();
+        setUserProfile(profileData);
+        
+        // 프로필에 브랜드가 있으면 사용 (로그인 후 브랜드 고정)
+        if (profileData.brand) {
+          // 브랜드 값을 역으로 찾기
+          const brandKey = Object.keys(BRAND_LABELS).find(
+            key => BRAND_LABELS[key] === profileData.brand
+          );
+          if (brandKey) {
+            setSelectedBrand(brandKey);
+            // 로컬 스토리지에도 저장하여 다음 접속 시 브랜드 선택 화면 건너뛰기
+            localStorage.setItem('selectedBrand', brandKey);
+          }
+        } else {
+          // 프로필에 브랜드가 없으면 로컬스토리지의 브랜드 사용
+          const savedBrand = localStorage.getItem('selectedBrand');
+          if (savedBrand) {
+            setSelectedBrand(savedBrand);
+          }
+        }
       } else {
         setUserProfile(null);
+        // 프로필이 없어도 로컬스토리지의 브랜드 사용
+        const savedBrand = localStorage.getItem('selectedBrand');
+        if (savedBrand) {
+          setSelectedBrand(savedBrand);
+        }
       }
     } catch (error) {
       console.error('프로필 가져오기 오류:', error);
       setUserProfile(null);
+      // 에러 발생 시에도 로컬스토리지의 브랜드 사용
+      const savedBrand = localStorage.getItem('selectedBrand');
+      if (savedBrand) {
+        setSelectedBrand(savedBrand);
+      }
     } finally {
       setProfileLoading(false);
     }
@@ -108,7 +149,12 @@ export const AuthProvider = ({ children }) => {
       if (user) {
         await fetchUserProfile(user.uid);
       } else {
+        // 로그아웃 시 프로필 초기화, 브랜드는 로컬스토리지에서 유지
         setUserProfile(null);
+        const savedBrand = localStorage.getItem('selectedBrand');
+        if (savedBrand) {
+          setSelectedBrand(savedBrand);
+        }
       }
       setLoading(false);
     });

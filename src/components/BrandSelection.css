@@ -153,6 +153,20 @@
   transform: none;
 }
 
+.disclaimer {
+  margin-top: 8px;
+  padding-top: 20px;
+  border-top: 1px solid #e8e8e8;
+}
+
+.disclaimer-text {
+  font-size: 12px;
+  color: #999;
+  line-height: 1.6;
+  text-align: center;
+  margin: 0;
+}
+
 @media (max-width: 768px) {
   .brand-selection-container {
     padding: 16px;
@@ -212,5 +226,13 @@
   .next-button {
     padding: 12px 20px;
     font-size: 15px;
+  }
+  
+  .disclaimer {
+    padding-top: 16px;
+  }
+  
+  .disclaimer-text {
+    font-size: 11px;
   }
 }

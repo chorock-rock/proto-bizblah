@@ -71,6 +71,15 @@ const BrandSelection = ({ onSelect }) => {
               다음 단계로
             </button>
           </form>
+          
+          <div className="disclaimer">
+            <p className="disclaimer-text">
+              본 커뮤니티는 프랜차이즈 점주 간 정보 교류를 목적으로 한 
+              <br />독립적인 커뮤니티이며,
+              <br />
+              각 브랜드 본사와는 어떠한 공식적 제휴·운영·보증 관계도 없습니다.
+            </p>
+          </div>
         </div>
       </div>
     </div>
