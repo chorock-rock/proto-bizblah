@@ -19,14 +19,9 @@
 
 
 .header-logo {
-  font-size: 24px;
-  font-weight: 700;
-  background: linear-gradient(135deg, var(--color-primary-gradient-start) 0%, var(--color-primary-gradient-end) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  height: 24px;
+  width: auto;
   margin: 0;
-  letter-spacing: -0.5px;
   cursor: pointer;
   transition: opacity 0.2s ease;
 }
@@ -213,7 +208,7 @@
   }
   
   .header-logo {
-    font-size: 20px;
+    height: 28px;
   }
   
   .user-info {
@@ -284,7 +279,7 @@
   }
   
   .header-logo {
-    font-size: 18px;
+    height: 20px;
   }
   
   .header-user {

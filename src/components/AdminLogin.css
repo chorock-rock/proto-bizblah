@@ -34,14 +34,12 @@
 }
 
 .admin-logo {
-  font-size: 42px;
-  font-weight: 700;
-  background: linear-gradient(135deg, var(--color-primary-gradient-start) 0%, var(--color-primary-gradient-end) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  height: 48px;
+  width: auto;
   margin: 0 0 8px 0;
-  letter-spacing: -1px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .admin-subtitle {
@@ -129,7 +127,7 @@
   }
   
   .admin-logo {
-    font-size: 36px;
+    height: 32px;
   }
   
   .form-group input {

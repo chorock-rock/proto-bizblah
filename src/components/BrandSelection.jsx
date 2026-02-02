@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import logo from '../assets/logo.svg';
 import './BrandSelection.css';
 
 const BRANDS = [
@@ -59,8 +60,8 @@ const BrandSelection = ({ onSelect }) => {
     <div className="brand-selection-container">
       <div className="brand-selection-card">
         <div className="brand-selection-header">
-          <h1 className="logo">BIZBLAH</h1>
-          <p className="subtitle">비즈블라:프랜차이즈 점주 익명 커뮤니티</p>
+          <img src={logo} alt="BIZBLAH" className="logo" />
+          <p className="subtitle">프랜차이즈 점주 익명 커뮤니티</p>
         </div>
         
         <div className="brand-selection-content">

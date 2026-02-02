@@ -93,7 +93,7 @@
 
 .form-group input:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #ED4E39;
 }
 
 .form-group input:disabled {
@@ -110,7 +110,7 @@
 .submit-button {
   width: 100%;
   padding: 14px 24px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #ED4E39 0%, #D63E2A 100%);
   border: none;
   border-radius: 8px;
   font-size: 16px;
@@ -122,7 +122,7 @@
 
 .submit-button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 12px rgba(237, 78, 57, 0.4);
 }
 
 .submit-button:disabled {

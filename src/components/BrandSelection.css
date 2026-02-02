@@ -3,7 +3,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #ED4E39 0%, #D63E2A 100%);
   padding: 20px;
 }
 
@@ -34,14 +34,12 @@
 }
 
 .logo {
-  font-size: 42px;
-  font-weight: 700;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  height: 36px;
+  width: auto;
   margin: 0 0 8px 0;
-  letter-spacing: -1px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .subtitle {
@@ -106,8 +104,8 @@
 
 .brand-select:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: #ED4E39;
+  box-shadow: 0 0 0 3px rgba(237, 78, 57, 0.1);
 }
 
 .brand-select:disabled {
@@ -128,7 +126,7 @@
 .next-button {
   width: 100%;
   padding: 14px 24px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #ED4E39 0%, #D63E2A 100%);
   border: none;
   border-radius: 8px;
   font-size: 16px;
@@ -140,7 +138,7 @@
 
 .next-button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 12px rgba(237, 78, 57, 0.4);
 }
 
 .next-button:active:not(:disabled) {
@@ -172,7 +170,7 @@
   padding: 12px;
   background: transparent;
   border: none;
-  color: #667eea;
+  color: #ED4E39;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -182,7 +180,7 @@
 }
 
 .custom-brand-button:hover {
-  color: #764ba2;
+  color: #D63E2A;
 }
 
 .custom-brand-input-wrapper {
@@ -203,8 +201,8 @@
 
 .custom-brand-input:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: #ED4E39;
+  box-shadow: 0 0 0 3px rgba(237, 78, 57, 0.1);
 }
 
 .custom-brand-input::placeholder {
@@ -221,7 +219,7 @@
   }
   
   .logo {
-    font-size: 36px;
+    height: 32px;
   }
   
   .question {
@@ -243,7 +241,7 @@
   }
   
   .logo {
-    font-size: 32px;
+    height: 28px;
   }
   
   .question {

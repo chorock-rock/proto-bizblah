@@ -177,7 +177,7 @@ const AdminDashboard = () => {
     <div className="admin-dashboard">
       <header className="admin-header">
         <div className="admin-header-content">
-          <h1 className="admin-title">BIZBLAH 관리자</h1>
+          <h1 className="admin-title">비즈블라 관리자</h1>
           <div className="admin-menu-container" ref={menuRef}>
             <button 
               className="admin-hamburger-button"
@@ -254,8 +254,8 @@ const AdminDashboard = () => {
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Line type="monotone" dataKey="가입자" stroke="#667eea" strokeWidth={2} />
-                    <Line type="monotone" dataKey="게시글" stroke="#764ba2" strokeWidth={2} />
+                    <Line type="monotone" dataKey="가입자" stroke="#ED4E39" strokeWidth={2} />
+                    <Line type="monotone" dataKey="게시글" stroke="#D63E2A" strokeWidth={2} />
                   </LineChart>
                 </ResponsiveContainer>
               )}

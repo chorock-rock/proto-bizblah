@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import logo from '../assets/logo.svg';
 import './Header.css';
 
 const Header = ({ currentView, onViewChange }) => {
@@ -86,12 +87,12 @@ const Header = ({ currentView, onViewChange }) => {
     <>
       <header className="header">
         <div className="header-content">
-          <h1 
+          <img 
+            src={logo} 
+            alt="BIZBLAH" 
             className="header-logo" 
             onClick={handleLogoClick}
-          >
-            BIZBLAH
-          </h1>
+          />
           <div className="header-user">
             {currentUser && (
               <>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { analytics } from '../firebase';
 import { logEvent } from 'firebase/analytics';
+import logo from '../assets/logo.svg';
 import './Login.css';
 
 const Login = () => {
@@ -42,8 +43,8 @@ const Login = () => {
     <div className="login-container">
       <div className="login-card">
         <div className="login-header">
-          <h1 className="logo">BIZBLAH</h1>
-          <p className="subtitle">비즈블라:프랜차이즈 점주 익명 커뮤니티</p>
+          <img src={logo} alt="BIZBLAH" className="logo" />
+          <p className="subtitle">프랜차이즈 점주 익명 커뮤니티</p>
         </div>
         
         <div className="login-content">

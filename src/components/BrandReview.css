@@ -248,7 +248,7 @@
 .write-review-button:hover,
 .edit-review-button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 12px rgba(237, 78, 57, 0.4);
 }
 
 .review-form {
@@ -414,7 +414,7 @@
 
 .submit-button:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 12px rgba(237, 78, 57, 0.4);
 }
 
 .submit-button:disabled {

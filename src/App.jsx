@@ -55,7 +55,7 @@ function AppContent() {
   useSEO({
     title: isAdminPage ? '관리자 페이지' : isPostDetailPage ? '게시글 상세' : '홈',
     description: isAdminPage 
-      ? 'BIZBLAH 관리자 페이지'
+      ? '비즈블라 관리자 페이지'
       : isPostDetailPage 
       ? '프랜차이즈 점주 커뮤니티 게시글을 확인하세요.'
       : '프랜차이즈 점주들을 위한 익명 커뮤니티. 안전하고 자유로운 소통 공간에서 정보를 공유하고 네트워킹하세요.',

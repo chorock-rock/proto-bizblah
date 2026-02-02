@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAdmin } from '../contexts/AdminContext';
+import logo from '../assets/logo.svg';
 import './AdminLogin.css';
 
 const AdminLogin = () => {
@@ -39,7 +40,7 @@ const AdminLogin = () => {
     <div className="admin-login-container">
       <div className="admin-login-card">
         <div className="admin-login-header">
-          <h1 className="admin-logo">BIZBLAH</h1>
+          <img src={logo} alt="BIZBLAH" className="admin-logo" />
           <p className="admin-subtitle">관리자 로그인</p>
         </div>
         
