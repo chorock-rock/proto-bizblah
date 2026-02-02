@@ -310,6 +310,12 @@ const BrandReview = () => {
         <div className="no-access-message">
           <h2>리뷰 작성 후 이용 가능합니다</h2>
           <p>브랜드 리뷰를 보시려면 먼저 리뷰를 작성해주세요.</p>
+          <button
+            className="write-review-button"
+            onClick={() => setShowReviewForm(true)}
+          >
+            리뷰 작성하기
+          </button>
         </div>
       </div>
     );

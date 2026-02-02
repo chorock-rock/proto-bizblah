@@ -1,18 +1,18 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import logo from '../assets/logo.svg';
 import './BrandSelection.css';
 
 const BRANDS = [
-  { value: 'megacoffee', label: '메가커피' },
-  { value: 'greenvillage', label: '초록마을' },
-  { value: 'starbucks', label: '스타벅스' },
+  { value: 'megamgccoffee', label: '메가엠지씨커피' },
+  { value: 'composecoffee', label: '컴포즈커피' },
   { value: 'ediya', label: '이디야커피' },
-  { value: 'twosome', label: '투썸플레이스' },
-  { value: 'angelinus', label: '엔젤리너스' },
-  { value: 'hollys', label: '할리스커피' },
+  { value: 'starbucks', label: '스타벅스' },
   { value: 'paik', label: '빽다방' },
-  { value: 'tomntoms', label: '탐앤탐스' },
-  { value: 'other', label: '기타' }
+  { value: 'twosome', label: '투썸플레이스' },
+  { value: 'theventi', label: '더벤티' },
+  { value: 'tenpercent', label: '텐퍼센트스페셜티커피' },
+  { value: 'mammothcoffee', label: '매머드커피' },
+  { value: 'mammothexpress', label: '매머드익스프레스' }
 ];
 
 const BrandSelection = ({ onSelect }) => {
@@ -20,6 +20,10 @@ const BrandSelection = ({ onSelect }) => {
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [customBrand, setCustomBrand] = useState('');
   const [error, setError] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+  const inputRef = useRef(null);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -41,18 +45,70 @@ const BrandSelection = ({ onSelect }) => {
     setError('');
   };
 
-  const handleSelectChange = (e) => {
-    const value = e.target.value;
-    setSelectedBrand(value);
-    
-    if (value === 'custom') {
-      // '내 브랜드가 없어요' 선택 시 입력창 표시
-      setShowCustomInput(true);
-      setCustomBrand('');
-    } else if (value) {
+  // 외부 클릭 시 드롭다운 닫기
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    if (isDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isDropdownOpen]);
+
+  // 필터링된 브랜드 목록
+  const filteredBrands = BRANDS.filter(brand =>
+    brand.label.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // 선택된 브랜드 라벨 가져오기
+  const selectedBrandLabel = BRANDS.find(b => b.value === selectedBrand)?.label || '';
+
+  const handleBrandSelect = (brandValue) => {
+    setSelectedBrand(brandValue);
+    setSearchQuery('');
+    setIsDropdownOpen(false);
+    setShowCustomInput(false);
+    setCustomBrand('');
+    setError('');
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+    setIsDropdownOpen(true);
+    setError('');
+  };
+
+  const handleInputFocus = () => {
+    if (showCustomInput) {
+      // 커스텀 입력 모드일 때 셀렉트 박스 클릭 시 일반 모드로 전환
       setShowCustomInput(false);
       setCustomBrand('');
     }
+    setIsDropdownOpen(true);
+  };
+
+  const handleSelectWrapperClick = () => {
+    if (showCustomInput) {
+      // 커스텀 입력 모드일 때 셀렉트 박스 영역 클릭 시 일반 모드로 전환
+      setShowCustomInput(false);
+      setCustomBrand('');
+      setError('');
+    }
+  };
+
+  const handleCustomBrandClick = () => {
+    setSelectedBrand('');
+    setSearchQuery('');
+    setIsDropdownOpen(false);
+    setShowCustomInput(true);
+    setCustomBrand('');
     setError('');
   };
 
@@ -67,24 +123,54 @@ const BrandSelection = ({ onSelect }) => {
         <div className="brand-selection-content">
           <h2 className="question">어디 점주님이신가요?</h2>
           <p className="description">
-            소속하신 프랜차이즈 브랜드를 선택해주세요.
+            운영중인 프랜차이즈 브랜드를 선택해주세요.
           </p>
           
           <form onSubmit={handleSubmit} className="brand-form">
-            <div className="select-wrapper">
-              <select
-                value={showCustomInput ? 'custom' : selectedBrand}
-                onChange={handleSelectChange}
-                className="brand-select"
-              >
-                <option value="">브랜드를 선택하세요</option>
-                {BRANDS.map((brand) => (
-                  <option key={brand.value} value={brand.value}>
-                    {brand.label}
-                  </option>
-                ))}
-                <option value="custom">내 브랜드가 없어요</option>
-              </select>
+            <div 
+              className={`select-wrapper ${isDropdownOpen ? 'dropdown-open' : ''}`} 
+              ref={dropdownRef}
+              onClick={handleSelectWrapperClick}
+            >
+              <div className="brand-search-input-wrapper">
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={isDropdownOpen ? searchQuery : selectedBrandLabel}
+                  onChange={handleSearchChange}
+                  onFocus={handleInputFocus}
+                  placeholder="브랜드를 선택해주세요"
+                  className="brand-search-input"
+                  disabled={showCustomInput}
+                />
+                <svg 
+                  className="brand-dropdown-icon" 
+                  viewBox="0 0 12 12" 
+                  onClick={() => !showCustomInput && setIsDropdownOpen(!isDropdownOpen)}
+                >
+                  <path fill="#333" d="M6 9L1 4h10z"/>
+                </svg>
+              </div>
+              
+              {isDropdownOpen && !showCustomInput && (
+                <div className="brand-dropdown">
+                  {filteredBrands.length > 0 ? (
+                    filteredBrands.map((brand) => (
+                      <div
+                        key={brand.value}
+                        className={`brand-option ${selectedBrand === brand.value ? 'selected' : ''}`}
+                        onClick={() => handleBrandSelect(brand.value)}
+                      >
+                        {brand.label}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="brand-option no-results">
+                      검색 결과가 없습니다
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {showCustomInput && (
@@ -110,6 +196,16 @@ const BrandSelection = ({ onSelect }) => {
               다음 단계로
             </button>
           </form>
+
+          {!showCustomInput && (
+            <button
+              type="button"
+              onClick={handleCustomBrandClick}
+              className="custom-brand-button"
+            >
+              내 브랜드가 없어요
+            </button>
+          )}
 
           
           <div className="disclaimer">

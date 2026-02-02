@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { analytics } from '../firebase';
 import { logEvent } from 'firebase/analytics';
-import logo from '../assets/logo.svg';
 import './Login.css';
 
 const Login = () => {
@@ -42,25 +41,14 @@ const Login = () => {
   return (
     <div className="login-container">
       <div className="login-card">
-        <div className="login-header">
-          <img src={logo} alt="BIZBLAH" className="logo" />
-          <p className="subtitle">프랜차이즈 점주 익명 커뮤니티</p>
-        </div>
-        
         <div className="login-content">
-          {selectedBrand && (
-            <div className="selected-brand-info">
-              <span className="brand-badge">{getBrandLabel()}</span>
-            </div>
-          )}
+          <h1 className="login-greeting">
+            {selectedBrand ? `${getBrandLabel()} 점주님, 안녕하세요.` : '점주님, 안녕하세요.'}
+          </h1>
           
-          <p className="description">
-            {selectedBrand 
-              ? `${getBrandLabel()} 점주님, 안녕하세요!`
-              : '프랜차이즈 점주들을 위한 익명 커뮤니티입니다.'
-            }
-            <br />
-            Google 계정으로 로그인하여 시작하세요.
+          <p className="login-description">
+            Google 계정으로 간편하게 로그인하고<br />
+            익명 커뮤니티를 시작해보세요.
           </p>
           
           {error && <div className="error-message">{error}</div>}
@@ -86,7 +74,7 @@ const Login = () => {
           </button>
           
           <p className="privacy-note">
-            로그인 시 개인정보 보호 정책 및 이용약관에 동의한 것으로 간주됩니다.
+            로그인 시 개인정보 처리방침 및 이용약관에 동의한 것으로 간주됩니다.
           </p>
         </div>
       </div>

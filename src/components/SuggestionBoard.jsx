@@ -15,15 +15,20 @@ const SuggestionBoard = () => {
   const [mySuggestions, setMySuggestions] = useState([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(true);
   const [selectedSuggestion, setSelectedSuggestion] = useState(null);
+  const [queryError, setQueryError] = useState(null);
 
   // 사용자 자신의 건의사항 목록 가져오기
   useEffect(() => {
-    if (!currentUser || activeTab !== 'history') return;
+    if (!currentUser || activeTab !== 'history') {
+      setLoadingSuggestions(false);
+      return;
+    }
 
+    setQueryError(null);
+    // 인덱스 없이도 작동하도록 orderBy 없이 쿼리하고 클라이언트에서 정렬
     const suggestionsQuery = query(
       collection(db, 'suggestions'),
-      where('authorId', '==', currentUser.uid),
-      orderBy('createdAt', 'desc')
+      where('authorId', '==', currentUser.uid)
     );
 
     setLoadingSuggestions(true);
@@ -33,12 +38,21 @@ const SuggestionBoard = () => {
         ...doc.data(),
         createdAt: doc.data().createdAt?.toDate() || new Date(),
         updatedAt: doc.data().updatedAt?.toDate() || null
-      }));
+      }))
+      // 클라이언트에서 날짜순 정렬 (최신순)
+      .sort((a, b) => {
+        const dateA = a.createdAt.getTime();
+        const dateB = b.createdAt.getTime();
+        return dateB - dateA; // 내림차순
+      });
+      
       setMySuggestions(suggestionsData);
       setLoadingSuggestions(false);
+      setQueryError(null);
     }, (error) => {
       console.error('건의사항 구독 오류:', error);
       setLoadingSuggestions(false);
+      setQueryError('건의사항을 불러오는 중 오류가 발생했습니다: ' + error.message);
     });
 
     return () => unsubscribe();
@@ -76,6 +90,7 @@ const SuggestionBoard = () => {
 
       setContent('');
       setShowSuccess(true);
+      // 건의 작성 후 내 건의내역 탭으로 전환하면 자동으로 새로고침됨
     } catch (err) {
       console.error('건의 작성 오류:', err);
       setError('건의 작성에 실패했습니다. 다시 시도해주세요.');
@@ -98,13 +113,13 @@ const SuggestionBoard = () => {
   const getStatusLabel = (status) => {
     switch (status) {
       case 'pending':
-        return { text: '검토 중', color: '#667eea' };
+        return { text: '검토 중', color: '#ED4E39' };
       case 'reviewed':
         return { text: '검토 완료', color: '#764ba2' };
       case 'resolved':
         return { text: '처리 완료', color: '#10b981' };
       default:
-        return { text: '검토 중', color: '#667eea' };
+        return { text: '검토 중', color: '#ED4E39' };
     }
   };
 
@@ -223,6 +238,27 @@ const SuggestionBoard = () => {
         <div className="suggestion-history-section">
           {loadingSuggestions ? (
             <div className="loading-state">로딩 중...</div>
+          ) : queryError ? (
+            <div className="empty-state">
+              <p style={{ color: 'var(--color-error-text)', marginBottom: '16px' }}>
+                {queryError === '인덱스_필요' ? (
+                  <>
+                    Firestore 인덱스가 필요합니다.
+                    <br />
+                    Firebase Console에서 인덱스를 생성해주세요.
+                  </>
+                ) : (
+                  queryError
+                )}
+              </p>
+              {queryError === '인덱스_필요' && (
+                <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '16px' }}>
+                  Collection: suggestions
+                  <br />
+                  Fields: authorId (Ascending), createdAt (Descending)
+                </p>
+              )}
+            </div>
           ) : mySuggestions.length === 0 ? (
             <div className="empty-state">
               <p>아직 제출한 건의사항이 없습니다.</p>

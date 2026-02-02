@@ -8,16 +8,16 @@ import { auth, googleProvider, db } from '../firebase';
 import { doc, getDoc } from 'firebase/firestore';
 
 const BRAND_LABELS = {
-  megacoffee: '메가커피',
-  greenvillage: '초록마을',
-  starbucks: '스타벅스',
+  megamgccoffee: '메가엠지씨커피',
+  composecoffee: '컴포즈커피',
   ediya: '이디야커피',
-  twosome: '투썸플레이스',
-  angelinus: '엔젤리너스',
-  hollys: '할리스커피',
+  starbucks: '스타벅스',
   paik: '빽다방',
-  tomntoms: '탐앤탐스',
-  other: '기타'
+  twosome: '투썸플레이스',
+  theventi: '더벤티',
+  tenpercent: '텐퍼센트스페셜티커피',
+  mammothcoffee: '매머드커피',
+  mammothexpress: '매머드익스프레스'
 };
 
 const AuthContext = createContext({});

@@ -60,13 +60,13 @@ const AdminSuggestions = () => {
   const getStatusLabel = (status) => {
     switch (status) {
       case 'pending':
-        return { text: '검토 중', color: '#667eea' };
+        return { text: '검토 중', color: '#ED4E39' };
       case 'reviewed':
         return { text: '검토 완료', color: '#764ba2' };
       case 'resolved':
         return { text: '처리 완료', color: '#10b981' };
       default:
-        return { text: '검토 중', color: '#667eea' };
+        return { text: '검토 중', color: '#ED4E39' };
     }
   };
 

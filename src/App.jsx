@@ -14,6 +14,7 @@ import PostDetailPage from './components/PostDetailPage';
 import AdminLogin from './components/AdminLogin';
 import AdminDashboard from './components/AdminDashboard';
 import BusinessNumberModal from './components/BusinessNumberModal';
+import Welcome from './components/Welcome';
 import './App.css';
 
 function AppContent() {
@@ -21,6 +22,7 @@ function AppContent() {
   const [showNicknameSetup, setShowNicknameSetup] = useState(false);
   const [currentView, setCurrentView] = useState('all');
   const [showBusinessNumberModal, setShowBusinessNumberModal] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(true);
 
   useEffect(() => {
     if (currentUser && !profileLoading) {
@@ -113,6 +115,10 @@ function AppContent() {
     }
   };
 
+  const handleWelcomeStart = () => {
+    setShowWelcome(false);
+  };
+
   return (
     <Routes>
       {/* 관리자 페이지 */}
@@ -154,8 +160,10 @@ function AppContent() {
         path="/*"
         element={
           <>
-            {/* 로그인한 사용자는 브랜드 선택 화면을 볼 수 없음 */}
-            {!currentUser ? (
+            {/* 웰컴 화면 표시 (최초 방문 시) */}
+            {showWelcome && !currentUser ? (
+              <Welcome onStart={handleWelcomeStart} />
+            ) : !currentUser ? (
               !selectedBrand ? (
                 <BrandSelection onSelect={selectBrand} />
               ) : (
