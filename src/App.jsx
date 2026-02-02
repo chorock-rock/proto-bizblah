@@ -25,8 +25,12 @@ function AppContent() {
   useEffect(() => {
     if (currentUser && !profileLoading) {
       if (!userProfile) {
-        // 프로필이 없으면 닉네임 설정
-        setShowNicknameSetup(true);
+        // 프로필이 없을 때: 브랜드가 있으면 닉네임 설정, 없으면 브랜드 선택 화면 표시
+        if (selectedBrand) {
+          setShowNicknameSetup(true);
+        } else {
+          setShowNicknameSetup(false);
+        }
       } else if (!userProfile.brand && selectedBrand) {
         // 프로필에 브랜드가 없지만 선택한 브랜드가 있으면 닉네임 설정
         setShowNicknameSetup(true);
@@ -161,12 +165,11 @@ function AppContent() {
               <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
                 로딩 중...
               </div>
+            ) : !selectedBrand ? (
+              // 로그인했지만 브랜드가 없으면 브랜드 선택 화면 표시
+              <BrandSelection onSelect={selectBrand} />
             ) : showNicknameSetup ? (
               <NicknameSetup onComplete={handleNicknameComplete} />
-            ) : !selectedBrand ? (
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-                로딩 중...
-              </div>
             ) : (
               <>
                 <Header currentView={currentView} onViewChange={setCurrentView} />

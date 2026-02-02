@@ -167,6 +167,50 @@
   margin: 0;
 }
 
+.custom-brand-button {
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  border: none;
+  color: #667eea;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  text-decoration: underline;
+  margin-top: 8px;
+}
+
+.custom-brand-button:hover {
+  color: #764ba2;
+}
+
+.custom-brand-input-wrapper {
+  margin-top: 8px;
+}
+
+.custom-brand-input {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 16px;
+  border: 2px solid #dadce0;
+  border-radius: 8px;
+  background: white;
+  color: #3c4043;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.custom-brand-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.custom-brand-input::placeholder {
+  color: #999;
+}
+
 @media (max-width: 768px) {
   .brand-selection-container {
     padding: 16px;

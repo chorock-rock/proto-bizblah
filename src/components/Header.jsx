@@ -1,9 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import './Header.css';
 
 const Header = ({ currentView, onViewChange }) => {
   const { currentUser, logout, getNickname, getBrandLabel } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const menuRef = useRef(null);
@@ -44,6 +47,15 @@ const Header = ({ currentView, onViewChange }) => {
     setMenuOpen(false);
   };
 
+  const handleLogoClick = () => {
+    // 게시글 상세 페이지에 있으면 홈으로 이동
+    if (location.pathname.startsWith('/post/')) {
+      navigate('/');
+    }
+    // 현재 뷰를 홈으로 변경
+    handleViewChange('all');
+  };
+
   const handleInvite = async () => {
     try {
       const url = window.location.origin;
@@ -74,7 +86,12 @@ const Header = ({ currentView, onViewChange }) => {
     <>
       <header className="header">
         <div className="header-content">
-          <h1 className="header-logo">BIZBLAH</h1>
+          <h1 
+            className="header-logo" 
+            onClick={handleLogoClick}
+          >
+            BIZBLAH
+          </h1>
           <div className="header-user">
             {currentUser && (
               <>

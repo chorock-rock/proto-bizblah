@@ -43,7 +43,7 @@ const Login = () => {
       <div className="login-card">
         <div className="login-header">
           <h1 className="logo">BIZBLAH</h1>
-          <p className="subtitle">프랜차이즈 점주 익명 커뮤니티</p>
+          <p className="subtitle">비즈블라:프랜차이즈 점주 익명 커뮤니티</p>
         </div>
         
         <div className="login-content">

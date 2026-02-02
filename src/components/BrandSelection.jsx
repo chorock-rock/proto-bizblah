@@ -16,16 +16,43 @@ const BRANDS = [
 
 const BrandSelection = ({ onSelect }) => {
   const [selectedBrand, setSelectedBrand] = useState('');
+  const [showCustomInput, setShowCustomInput] = useState(false);
+  const [customBrand, setCustomBrand] = useState('');
   const [error, setError] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!selectedBrand) {
-      setError('브랜드를 선택해주세요.');
+    if (!selectedBrand && !customBrand) {
+      setError('브랜드를 선택하거나 입력해주세요.');
       return;
     }
     setError('');
-    onSelect(selectedBrand);
+    // 커스텀 브랜드가 입력된 경우
+    if (customBrand.trim()) {
+      onSelect(`custom:${customBrand.trim()}`);
+    } else {
+      onSelect(selectedBrand);
+    }
+  };
+
+  const handleCustomBrandChange = (e) => {
+    setCustomBrand(e.target.value);
+    setError('');
+  };
+
+  const handleSelectChange = (e) => {
+    const value = e.target.value;
+    setSelectedBrand(value);
+    
+    if (value === 'custom') {
+      // '내 브랜드가 없어요' 선택 시 입력창 표시
+      setShowCustomInput(true);
+      setCustomBrand('');
+    } else if (value) {
+      setShowCustomInput(false);
+      setCustomBrand('');
+    }
+    setError('');
   };
 
   return (
@@ -33,7 +60,7 @@ const BrandSelection = ({ onSelect }) => {
       <div className="brand-selection-card">
         <div className="brand-selection-header">
           <h1 className="logo">BIZBLAH</h1>
-          <p className="subtitle">프랜차이즈 점주 익명 커뮤니티</p>
+          <p className="subtitle">비즈블라:프랜차이즈 점주 익명 커뮤니티</p>
         </div>
         
         <div className="brand-selection-content">
@@ -45,11 +72,8 @@ const BrandSelection = ({ onSelect }) => {
           <form onSubmit={handleSubmit} className="brand-form">
             <div className="select-wrapper">
               <select
-                value={selectedBrand}
-                onChange={(e) => {
-                  setSelectedBrand(e.target.value);
-                  setError('');
-                }}
+                value={showCustomInput ? 'custom' : selectedBrand}
+                onChange={handleSelectChange}
                 className="brand-select"
               >
                 <option value="">브랜드를 선택하세요</option>
@@ -58,19 +82,34 @@ const BrandSelection = ({ onSelect }) => {
                     {brand.label}
                   </option>
                 ))}
+                <option value="custom">내 브랜드가 없어요</option>
               </select>
             </div>
+
+            {showCustomInput && (
+              <div className="custom-brand-input-wrapper">
+                <input
+                  type="text"
+                  value={customBrand}
+                  onChange={handleCustomBrandChange}
+                  placeholder="브랜드 이름을 입력하세요"
+                  className="custom-brand-input"
+                  autoFocus
+                />
+              </div>
+            )}
             
             {error && <div className="error-message">{error}</div>}
             
             <button 
               type="submit"
               className="next-button"
-              disabled={!selectedBrand}
+              disabled={!selectedBrand && !customBrand.trim()}
             >
               다음 단계로
             </button>
           </form>
+
           
           <div className="disclaimer">
             <p className="disclaimer-text">

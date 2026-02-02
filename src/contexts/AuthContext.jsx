@@ -73,7 +73,14 @@ export const AuthProvider = ({ children }) => {
 
   // 브랜드 이름 가져오기
   const getBrandLabel = () => {
-    return selectedBrand ? BRAND_LABELS[selectedBrand] || '점주' : '점주';
+    if (!selectedBrand) return '점주';
+    
+    // 커스텀 브랜드 처리 (custom:브랜드명 형식)
+    if (selectedBrand.startsWith('custom:')) {
+      return selectedBrand.replace('custom:', '');
+    }
+    
+    return BRAND_LABELS[selectedBrand] || '점주';
   };
 
   // 사용자 프로필 가져오기
@@ -105,30 +112,29 @@ export const AuthProvider = ({ children }) => {
             setSelectedBrand(brandKey);
             // 로컬 스토리지에도 저장하여 다음 접속 시 브랜드 선택 화면 건너뛰기
             localStorage.setItem('selectedBrand', brandKey);
+          } else {
+            // BRAND_LABELS에 없으면 커스텀 브랜드로 처리
+            const customBrandValue = `custom:${profileData.brand}`;
+            setSelectedBrand(customBrandValue);
+            localStorage.setItem('selectedBrand', customBrandValue);
           }
         } else {
-          // 프로필에 브랜드가 없으면 로컬스토리지의 브랜드 사용
-          const savedBrand = localStorage.getItem('selectedBrand');
-          if (savedBrand) {
-            setSelectedBrand(savedBrand);
-          }
+          // 프로필에 브랜드가 없으면 브랜드 초기화 (브랜드 선택 화면 표시)
+          setSelectedBrand(null);
+          localStorage.removeItem('selectedBrand');
         }
       } else {
+        // 프로필이 없으면 브랜드 초기화 (브랜드 선택 화면 표시)
         setUserProfile(null);
-        // 프로필이 없어도 로컬스토리지의 브랜드 사용
-        const savedBrand = localStorage.getItem('selectedBrand');
-        if (savedBrand) {
-          setSelectedBrand(savedBrand);
-        }
+        setSelectedBrand(null);
+        localStorage.removeItem('selectedBrand');
       }
     } catch (error) {
       console.error('프로필 가져오기 오류:', error);
       setUserProfile(null);
-      // 에러 발생 시에도 로컬스토리지의 브랜드 사용
-      const savedBrand = localStorage.getItem('selectedBrand');
-      if (savedBrand) {
-        setSelectedBrand(savedBrand);
-      }
+      // 에러 발생 시 브랜드 초기화
+      setSelectedBrand(null);
+      localStorage.removeItem('selectedBrand');
     } finally {
       setProfileLoading(false);
     }

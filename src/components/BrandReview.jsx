@@ -70,8 +70,15 @@ const BrandReview = () => {
     try {
       setLoading(true);
       const brandLabel = getBrandLabel();
+      
+      // 현재 사용자의 브랜드만 가져오기 (브랜드가 없으면 리턴)
+      if (!brandLabel || brandLabel === '점주') {
+        setReviews([]);
+        setLoading(false);
+        return;
+      }
 
-      // 해당 브랜드의 모든 리뷰 가져오기
+      // 해당 브랜드의 모든 리뷰 가져오기 (현재 사용자의 브랜드만)
       const reviewsQuery = query(
         collection(db, 'brandReviews'),
         where('brand', '==', brandLabel)
@@ -242,9 +249,16 @@ const BrandReview = () => {
     setSubmitting(true);
     try {
       const brandLabel = getBrandLabel();
+      
+      // 현재 사용자의 브랜드가 없으면 제출 불가
+      if (!brandLabel || brandLabel === '점주') {
+        setSubmitting(false);
+        return;
+      }
+      
       const authorName = getNickname();
       const reviewData = {
-        brand: brandLabel,
+        brand: brandLabel, // 현재 사용자의 브랜드로만 저장
         authorId: currentUser.uid,
         profitability: scores.profitability,
         support: scores.support,

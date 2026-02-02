@@ -132,6 +132,184 @@
   cursor: not-allowed;
 }
 
+/* 탭 스타일 */
+.suggestion-tabs {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  border-bottom: 2px solid var(--color-border-primary);
+}
+
+.suggestion-tab {
+  padding: 12px 24px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: -2px;
+}
+
+.suggestion-tab:hover {
+  color: var(--color-text-primary);
+}
+
+.suggestion-tab.active {
+  color: var(--color-primary-gradient-start);
+  border-bottom-color: var(--color-primary-gradient-start);
+}
+
+/* 건의내역 섹션 */
+.suggestion-history-section {
+  margin-top: 24px;
+}
+
+.loading-state,
+.empty-state {
+  text-align: center;
+  padding: 60px 24px;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-primary);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 16px;
+}
+
+.suggestion-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.suggestion-item {
+  background: var(--color-bg-primary);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.suggestion-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-border-focus);
+}
+
+.suggestion-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  gap: 16px;
+}
+
+.suggestion-item-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.suggestion-item-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+  flex: 1;
+}
+
+.suggestion-status-badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+  white-space: nowrap;
+}
+
+.suggestion-item-date {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.suggestion-item-content {
+  font-size: 15px;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin-top: 8px;
+}
+
+/* 건의사항 상세보기 */
+.suggestion-detail-view {
+  background: var(--color-bg-primary);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.back-button {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 8px 0;
+  margin-bottom: 20px;
+  transition: color 0.2s ease;
+}
+
+.back-button:hover {
+  color: var(--color-text-primary);
+}
+
+.suggestion-detail-header {
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid var(--color-border-primary);
+}
+
+.suggestion-detail-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.suggestion-detail-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+  flex: 1;
+}
+
+.suggestion-detail-meta {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+
+.suggestion-detail-content {
+  font-size: 16px;
+  line-height: 1.8;
+  color: var(--color-text-primary);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 
 @media (max-width: 768px) {
   .suggestion-board-container {
@@ -162,6 +340,40 @@
   .submit-button {
     width: 100%;
   }
+
+  .suggestion-tabs {
+    gap: 4px;
+  }
+
+  .suggestion-tab {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+
+  .suggestion-item-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .suggestion-item-title-wrapper {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .suggestion-item-date {
+    width: 100%;
+  }
+
+  .suggestion-detail-title-wrapper {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .suggestion-detail-meta {
+    flex-direction: column;
+    gap: 8px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -180,5 +392,26 @@
   
   .success-message-large {
     font-size: 18px;
+  }
+
+  .suggestion-tab {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .suggestion-item {
+    padding: 16px;
+  }
+
+  .suggestion-item-title {
+    font-size: 16px;
+  }
+
+  .suggestion-detail-view {
+    padding: 16px;
+  }
+
+  .suggestion-detail-title {
+    font-size: 20px;
   }
 }
