@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /admin/login
+Disallow: /admin/posts
+Disallow: /admin/notices
+Disallow: /admin/suggestions
+
+Sitemap: https://bizblah.com/sitemap.xml

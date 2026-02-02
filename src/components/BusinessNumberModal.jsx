@@ -52,29 +52,79 @@ const BusinessNumberModal = ({ onVerify, onClose }) => {
     }
 
     setIsVerifying(true);
+    setError('');
     
     try {
-      const isValid = verifyBusinessNumber(numbersOnly);
-      
-      if (isValid && currentUser) {
-        // Firestore에 사업자 등록 번호 저장 (숫자만 저장)
-        const userRef = doc(db, 'users', currentUser.uid);
-        await setDoc(userRef, {
-          businessNumber: numbersOnly,
-          businessNumberVerifiedAt: serverTimestamp()
-        }, { merge: true });
-        
-        // 검증 통과
-        localStorage.setItem('businessNumberVerified', 'true');
-        localStorage.setItem('businessNumber', numbersOnly);
-        onVerify(true);
+      // 먼저 형식 검증
+      const formatValid = verifyBusinessNumber(numbersOnly);
+      if (!formatValid) {
+        setError('유효하지 않은 사업자 등록 번호 형식입니다.');
+        setIsVerifying(false);
+        return;
+      }
+
+      // API로 실제 사업자 번호 조회
+      const apiKey = import.meta.env.VITE_BUSINESS_API_SERVICE_KEY;
+      if (!apiKey) {
+        console.error('사업자 번호 조회 API 키가 설정되지 않았습니다.');
+        setError('서비스 설정 오류가 발생했습니다.');
+        setIsVerifying(false);
+        return;
+      }
+
+      const response = await fetch('https://api.odcloud.kr/api/nts-businessman/v1/status?serviceKey=' + encodeURIComponent(apiKey), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          b_no: [numbersOnly]
+        })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API 오류:', errorText);
+        setError('사업자 번호 조회 중 오류가 발생했습니다.');
+        setIsVerifying(false);
+        return;
+      }
+
+      const result = await response.json();
+      console.log('사업자 번호 조회 결과:', result);
+
+      // API 응답 확인
+      if (result.data && result.data.length > 0) {
+        const businessData = result.data[0];
+        // b_stt: 사업자 상태 (01: 부도, 02: 휴업, 03: 폐업, 04: 정상)
+        // b_stt_cd: 사업자 상태 코드
+        if (businessData.b_stt === '01' || businessData.b_stt === '02' || businessData.b_stt === '03') {
+          setError('휴업, 폐업, 또는 부도 상태의 사업자 번호입니다.');
+          setIsVerifying(false);
+          return;
+        }
+
+        // 정상 사업자 번호인 경우 저장
+        if (currentUser) {
+          const userRef = doc(db, 'users', currentUser.uid);
+          await setDoc(userRef, {
+            businessNumber: numbersOnly,
+            businessNumberVerifiedAt: serverTimestamp()
+          }, { merge: true });
+          
+          // 검증 통과
+          localStorage.setItem('businessNumberVerified', 'true');
+          localStorage.setItem('businessNumber', numbersOnly);
+          onVerify(true);
+        }
       } else {
-        setError('유효하지 않은 사업자 등록 번호입니다.');
+        setError('등록되지 않은 사업자 번호입니다.');
+        setIsVerifying(false);
       }
     } catch (err) {
-      setError('검증 중 오류가 발생했습니다.');
       console.error('사업자 등록 번호 검증 오류:', err);
-    } finally {
+      setError('검증 중 오류가 발생했습니다. 다시 시도해주세요.');
       setIsVerifying(false);
     }
   };

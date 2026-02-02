@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { db } from '../firebase';
-import { collection, query, orderBy, onSnapshot, where } from 'firebase/firestore';
+import { db, analytics } from '../firebase';
+import { collection, query, orderBy, onSnapshot, where, doc, getDoc, setDoc, updateDoc, increment, serverTimestamp } from 'firebase/firestore';
+import { logEvent } from 'firebase/analytics';
 import PostWrite from './PostWrite';
 import './Board.css';
 
@@ -13,6 +14,8 @@ const Board = ({ filter = 'all' }) => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showWriteModal, setShowWriteModal] = useState(false);
+  const [likedPosts, setLikedPosts] = useState({}); // { postId: true/false }
+  const [animatingPosts, setAnimatingPosts] = useState({}); // { postId: true/false }
   const scrollRestoredRef = useRef(false);
 
   useEffect(() => {
@@ -54,13 +57,33 @@ const Board = ({ filter = 'all' }) => {
       );
     }
 
-    const unsubscribe = onSnapshot(postsQuery, (snapshot) => {
+    const unsubscribe = onSnapshot(postsQuery, async (snapshot) => {
       const postsData = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
         createdAt: doc.data().createdAt?.toDate() || new Date()
       }));
       setPosts(postsData);
+      
+      // 각 게시글의 좋아요 상태 확인
+      if (currentUser) {
+        const likedStatus = {};
+        await Promise.all(
+          postsData.map(async (post) => {
+            try {
+              const likeDoc = await getDoc(doc(db, 'posts', post.id, 'likes', currentUser.uid));
+              likedStatus[post.id] = likeDoc.exists() && likeDoc.data().deleted !== true;
+            } catch (error) {
+              console.error(`게시글 ${post.id} 좋아요 상태 확인 오류:`, error);
+              likedStatus[post.id] = false;
+            }
+          })
+        );
+        setLikedPosts(likedStatus);
+      } else {
+        setLikedPosts({});
+      }
+      
       setLoading(false);
     }, (error) => {
       console.error('게시글 구독 오류:', error);
@@ -139,6 +162,61 @@ const Board = ({ filter = 'all' }) => {
     navigate(`/post/${postId}`);
   };
 
+  const handleLike = async (e, postId) => {
+    e.stopPropagation(); // 게시글 클릭 이벤트 방지
+    if (!currentUser) return;
+
+    try {
+      const likeRef = doc(db, 'posts', postId, 'likes', currentUser.uid);
+      const likeDoc = await getDoc(likeRef);
+      
+      if (likeDoc.exists() && likeDoc.data().deleted !== true) {
+        // 좋아요 취소
+        await updateDoc(likeRef, { deleted: true });
+        await updateDoc(doc(db, 'posts', postId), {
+          likes: increment(-1)
+        });
+        setLikedPosts(prev => ({ ...prev, [postId]: false }));
+        setAnimatingPosts(prev => ({ ...prev, [postId]: false }));
+        
+        // 좋아요 취소 이벤트 추적
+        if (analytics) {
+          logEvent(analytics, 'post_unlike', {
+            post_id: postId,
+            content_type: 'post'
+          });
+        }
+      } else {
+        // 좋아요 추가
+        await setDoc(likeRef, {
+          userId: currentUser.uid,
+          createdAt: serverTimestamp(),
+          deleted: false
+        });
+        await updateDoc(doc(db, 'posts', postId), {
+          likes: increment(1)
+        });
+        setLikedPosts(prev => ({ ...prev, [postId]: true }));
+        setAnimatingPosts(prev => ({ ...prev, [postId]: true }));
+        
+        // 애니메이션 종료
+        setTimeout(() => {
+          setAnimatingPosts(prev => ({ ...prev, [postId]: false }));
+        }, 3000);
+        
+        // 좋아요 이벤트 추적
+        if (analytics) {
+          logEvent(analytics, 'post_like', {
+            post_id: postId,
+            content_type: 'post'
+          });
+        }
+      }
+    } catch (error) {
+      console.error('좋아요 오류:', error);
+    }
+  };
+
   return (
     <>
       <div className="board-container">
@@ -177,12 +255,25 @@ const Board = ({ filter = 'all' }) => {
                   <h3 className="post-title">{post.title}</h3>
                   <p className="post-content">{post.content}</p>
                   <div className="post-stats">
-                    <span className="post-likes">
-                      <svg className="post-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                    <button 
+                      className={`post-likes-button ${likedPosts[post.id] ? 'liked' : ''} ${animatingPosts[post.id] ? 'animating' : ''}`}
+                      onClick={(e) => handleLike(e, post.id)}
+                      aria-label="좋아요"
+                    >
+                      <svg className="post-icon" viewBox="0 0 24 24" fill={likedPosts[post.id] ? "currentColor" : "none"} xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
+                      {animatingPosts[post.id] && (
+                        <div className="heart-burst">
+                          <span className="heart-particle">❤️</span>
+                          <span className="heart-particle">❤️</span>
+                          <span className="heart-particle">❤️</span>
+                          <span className="heart-particle">❤️</span>
+                          <span className="heart-particle">❤️</span>
+                        </div>
+                      )}
                       {post.likes || 0}
-                    </span>
+                    </button>
                     <span className="post-comments">
                       <svg className="post-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>

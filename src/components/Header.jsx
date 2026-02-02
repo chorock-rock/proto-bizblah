@@ -123,6 +123,12 @@ const Header = ({ currentView, onViewChange }) => {
                           건의하기
                         </button>
                         <button
+                          className={`menu-item ${currentView === 'review' ? 'active' : ''}`}
+                          onClick={() => handleViewChange('review')}
+                        >
+                          브랜드 리뷰
+                        </button>
+                        <button
                           className="menu-item"
                           onClick={handleInvite}
                         >

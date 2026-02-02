@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { AdminProvider } from './contexts/AdminContext';
 import { analytics } from './firebase';
 import { logEvent } from 'firebase/analytics';
+import { useSEO } from './hooks/useSEO';
 import BrandSelection from './components/BrandSelection';
 import Login from './components/Login';
 import Header from './components/Header';
@@ -44,6 +45,18 @@ function AppContent() {
 
   const location = useLocation();
   const isPostDetailPage = location.pathname.startsWith('/post/');
+  const isAdminPage = location.pathname.startsWith('/admin');
+
+  // SEO 설정
+  useSEO({
+    title: isAdminPage ? '관리자 페이지' : isPostDetailPage ? '게시글 상세' : '홈',
+    description: isAdminPage 
+      ? 'BIZBLAH 관리자 페이지'
+      : isPostDetailPage 
+      ? '프랜차이즈 점주 커뮤니티 게시글을 확인하세요.'
+      : '프랜차이즈 점주들을 위한 익명 커뮤니티. 안전하고 자유로운 소통 공간에서 정보를 공유하고 네트워킹하세요.',
+    url: location.pathname
+  });
 
   // 페이지뷰 추적
   useEffect(() => {
