@@ -32,7 +32,7 @@ const MainContent = ({ currentView = 'all' }) => {
       default:
         return {
           title: '게시판',
-          description: '자영업자 커뮤니티 게시판에서 정보를 공유하고 소통하세요.'
+          description: '프랜차이즈 점주 커뮤니티 게시판에서 정보를 공유하고 소통하세요.'
         };
     }
   };

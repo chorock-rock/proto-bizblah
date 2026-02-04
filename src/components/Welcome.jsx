@@ -8,7 +8,7 @@ const Welcome = ({ onStart }) => {
       <div className="welcome-content">
         <div className="welcome-header">
           <img src={logo} alt="비즈블라" className="welcome-logo" />
-          <p className="welcome-subtitle">자영업자를 위한 익명 커뮤니티</p>
+          <p className="welcome-subtitle">프랜차이즈 점주를 위한 익명 커뮤니티</p>
         </div>
 
         <div className="welcome-description">
@@ -30,7 +30,7 @@ const Welcome = ({ onStart }) => {
 
         <div className="welcome-disclaimer" style={{ textAlign: 'center' }}>
           <p>
-            본 커뮤니티는 자영업자 간 정보 공유를 목적으로 한
+            본 커뮤니티는 프랜차이즈 점주 간 정보 공유를 목적으로 한
             <br /> 
             독립적인 커뮤니티이며,
             각 브랜드 본사와는 공식적인 제휴 
