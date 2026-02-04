@@ -117,13 +117,13 @@ const BrandSelection = ({ onSelect }) => {
       <div className="brand-selection-card">
         <div className="brand-selection-header">
           <img src={logo} alt="BIZBLAH" className="logo" />
-          <p className="subtitle">프랜차이즈 점주 익명 커뮤니티</p>
+          <p className="subtitle">자영업자 익명 커뮤니티</p>
         </div>
         
         <div className="brand-selection-content">
           <h2 className="question">어디 점주님이신가요?</h2>
           <p className="description">
-            운영중인 프랜차이즈 브랜드를 선택해주세요.
+            운영중인 브랜드를 선택해주세요.
           </p>
           
           <form onSubmit={handleSubmit} className="brand-form">
@@ -139,7 +139,7 @@ const BrandSelection = ({ onSelect }) => {
                   value={isDropdownOpen ? searchQuery : selectedBrandLabel}
                   onChange={handleSearchChange}
                   onFocus={handleInputFocus}
-                  placeholder="브랜드를 선택해주세요"
+                  placeholder="브랜드를 검색하거나 선택해주세요"
                   className="brand-search-input"
                   disabled={showCustomInput}
                 />
@@ -203,14 +203,14 @@ const BrandSelection = ({ onSelect }) => {
               onClick={handleCustomBrandClick}
               className="custom-brand-button"
             >
-              내 브랜드가 없어요
+              내 브랜드 추가하기
             </button>
           )}
 
           
           <div className="disclaimer">
             <p className="disclaimer-text">
-              본 커뮤니티는 프랜차이즈 점주 간 정보 교류를 목적으로 한 
+              본 커뮤니티는 자영업자 간 정보 교류를 목적으로 한 
               <br />독립적인 커뮤니티이며,
               <br />
               각 브랜드 본사와는 어떠한 공식적 제휴·운영·보증 관계도 없습니다.

@@ -255,7 +255,7 @@ const AdminDashboard = () => {
                     <Tooltip />
                     <Legend />
                     <Line type="monotone" dataKey="가입자" stroke="#ED4E39" strokeWidth={2} />
-                    <Line type="monotone" dataKey="게시글" stroke="#D63E2A" strokeWidth={2} />
+                    <Line type="monotone" dataKey="게시글" stroke="#4285F4" strokeWidth={2} />
                   </LineChart>
                 </ResponsiveContainer>
               )}

@@ -25,12 +25,6 @@ const Board = ({ filter = 'all' }) => {
       return;
     }
 
-    if (!selectedBrand && filter === 'all') {
-      setPosts([]);
-      setLoading(false);
-      return;
-    }
-
     // 게시글 실시간 구독
     let postsQuery;
     if (filter === 'my' && currentUser) {
@@ -41,18 +35,9 @@ const Board = ({ filter = 'all' }) => {
         orderBy('createdAt', 'desc')
       );
     } else {
-      // 내 브랜드 게시글만 필터링
-      const brandLabel = getBrandLabel();
-      
-      if (!brandLabel || brandLabel === '점주') {
-        setPosts([]);
-        setLoading(false);
-        return;
-      }
-      
+      // 전체 게시글 조회 (브랜드 필터링 제거)
       postsQuery = query(
         collection(db, 'posts'),
-        where('authorBrand', '==', brandLabel),
         orderBy('createdAt', 'desc')
       );
     }
@@ -108,7 +93,7 @@ const Board = ({ filter = 'all' }) => {
             'Firestore 인덱스가 필요합니다.\n\n' +
             'Firebase Console > Firestore Database > Indexes에서 다음 인덱스를 생성해주세요:\n\n' +
             'Collection: posts\n' +
-            'Fields: authorBrand (Ascending), createdAt (Descending)'
+            'Fields: createdAt (Descending)'
           );
         }
       }
@@ -116,7 +101,7 @@ const Board = ({ filter = 'all' }) => {
     });
 
     return () => unsubscribe();
-  }, [filter, currentUser, selectedBrand]);
+  }, [filter, currentUser]);
 
   const formatDate = (date) => {
     const now = new Date();

@@ -38,7 +38,7 @@ const PostDetailPage = ({ currentView = 'all', onViewChange }) => {
     description: post 
       ? post.content 
         ? post.content.substring(0, 150).replace(/\n/g, ' ') + '...'
-        : '프랜차이즈 점주 커뮤니티 게시글을 확인하세요.'
+        : '자영업자 커뮤니티 게시글을 확인하세요.'
       : '게시글을 불러오는 중...',
     url: `/post/${postId}`
   });

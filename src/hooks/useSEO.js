@@ -20,8 +20,8 @@ export const useSEO = ({
     const baseUrl = window.location.origin;
     const fullUrl = url ? `${baseUrl}${url}` : baseUrl;
     const defaultImage = `${baseUrl}/og-image.png`;
-    const defaultDescription = 'BIZBLAH - 프랜차이즈 점주들을 위한 익명 커뮤니티. 안전하고 자유로운 소통 공간에서 정보를 공유하고 네트워킹하세요.';
-    const defaultTitle = 'BIZBLAH - 프랜차이즈 점주 익명 커뮤니티';
+    const defaultDescription = 'BIZBLAH - 자영업자를 위한 익명 커뮤니티. 안전하고 자유로운 소통 공간에서 정보를 공유하고 네트워킹하세요.';
+    const defaultTitle = 'BIZBLAH - 자영업자 익명 커뮤니티';
     
     const finalTitle = title ? `${title} | ${defaultTitle}` : defaultTitle;
     const finalDescription = description || defaultDescription;

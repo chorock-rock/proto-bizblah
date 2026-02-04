@@ -55,6 +55,8 @@ const Header = ({ currentView, onViewChange }) => {
     }
     // 현재 뷰를 홈으로 변경
     handleViewChange('all');
+    // 맨 상단으로 스크롤
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleInvite = async () => {

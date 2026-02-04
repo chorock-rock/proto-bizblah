@@ -22,7 +22,7 @@ const MainContent = ({ currentView = 'all' }) => {
       case 'review':
         return {
           title: '브랜드 리뷰',
-          description: '프랜차이즈 브랜드에 대한 점주님들의 솔직한 리뷰를 확인하세요.'
+          description: '브랜드에 대한 점주님들의 솔직한 리뷰를 확인하세요.'
         };
       case 'my':
         return {
@@ -32,7 +32,7 @@ const MainContent = ({ currentView = 'all' }) => {
       default:
         return {
           title: '게시판',
-          description: '프랜차이즈 점주 커뮤니티 게시판에서 정보를 공유하고 소통하세요.'
+          description: '자영업자 커뮤니티 게시판에서 정보를 공유하고 소통하세요.'
         };
     }
   };
