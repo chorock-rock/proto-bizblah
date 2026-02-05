@@ -5,11 +5,13 @@ import logo from '../assets/logo.svg';
 import './Header.css';
 
 const Header = ({ currentView, onViewChange }) => {
-  const { currentUser, logout, getNickname, getBrandLabel } = useAuth();
+  const { currentUser, logout, deleteAccount, getNickname, getBrandLabel } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const menuRef = useRef(null);
 
   const handleLogout = async () => {
@@ -82,6 +84,19 @@ const Header = ({ currentView, onViewChange }) => {
       setTimeout(() => {
         setShowToast(false);
       }, 3000);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    try {
+      setDeleting(true);
+      await deleteAccount();
+      setShowDeleteConfirm(false);
+      setMenuOpen(false);
+    } catch (error) {
+      console.error('회원탈퇴 오류:', error);
+      alert('회원탈퇴 중 오류가 발생했습니다. 다시 시도해주세요.');
+      setDeleting(false);
     }
   };
 
@@ -158,6 +173,15 @@ const Header = ({ currentView, onViewChange }) => {
                         <button className="menu-item logout-item" onClick={handleLogout}>
                           로그아웃
                         </button>
+                        <button 
+                          className="menu-item delete-account-item" 
+                          onClick={() => {
+                            setShowDeleteConfirm(true);
+                            setMenuOpen(false);
+                          }}
+                        >
+                          회원탈퇴
+                        </button>
                       </div>
                     </>
                   )}
@@ -170,6 +194,31 @@ const Header = ({ currentView, onViewChange }) => {
       {showToast && (
         <div className="toast-message">
           링크가 복사되었습니다.
+        </div>
+      )}
+      {showDeleteConfirm && (
+        <div className="delete-confirm-overlay" onClick={() => setShowDeleteConfirm(false)}>
+          <div className="delete-confirm-modal" onClick={(e) => e.stopPropagation()}>
+            <h3>회원탈퇴</h3>
+            <p>정말로 회원탈퇴를 하시겠습니까?</p>
+            <p className="delete-warning">탈퇴 시 모든 데이터가 삭제되며 복구할 수 없습니다.</p>
+            <div className="delete-confirm-buttons">
+              <button 
+                className="delete-cancel-button"
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={deleting}
+              >
+                취소
+              </button>
+              <button 
+                className="delete-confirm-button"
+                onClick={handleDeleteAccount}
+                disabled={deleting}
+              >
+                {deleting ? '처리 중...' : '탈퇴하기'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </>

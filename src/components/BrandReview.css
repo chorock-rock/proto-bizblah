@@ -303,7 +303,7 @@
   font-family: inherit;
   background: white;
   color: #000;
-  resize: vertical;
+  resize: none;
   min-height: 120px;
   transition: border-color 0.2s ease;
 }

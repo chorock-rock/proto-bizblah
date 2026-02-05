@@ -249,7 +249,6 @@ const BrandReview = () => {
     setSubmitting(true);
     try {
       const brandLabel = getBrandLabel();
-      
       // 현재 사용자의 브랜드가 없으면 제출 불가
       if (!brandLabel || brandLabel === '점주') {
         setSubmitting(false);
@@ -260,11 +259,6 @@ const BrandReview = () => {
       const reviewData = {
         brand: brandLabel, // 현재 사용자의 브랜드로만 저장
         authorId: currentUser.uid,
-        profitability: scores.profitability,
-        support: scores.support,
-        logistics: scores.logistics,
-        competitiveness: scores.competitiveness,
-        communication: scores.communication,
         comment: comment.trim() || '', // 텍스트 입력 (빈 값 허용)
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
@@ -310,12 +304,6 @@ const BrandReview = () => {
         <div className="no-access-message">
           <h2>리뷰 작성 후 이용 가능합니다</h2>
           <p>브랜드 리뷰를 보시려면 먼저 리뷰를 작성해주세요.</p>
-          <button
-            className="write-review-button"
-            onClick={() => setShowReviewForm(true)}
-          >
-            리뷰 작성하기
-          </button>
         </div>
       </div>
     );

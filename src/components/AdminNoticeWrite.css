@@ -38,8 +38,8 @@
 
 .close-button {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: 4px;
+  right: 4px;
   background: none;
   border: none;
   font-size: 24px;
@@ -126,7 +126,7 @@
 }
 
 .form-group textarea {
-  resize: vertical;
+  resize: none;
   min-height: 200px;
 }
 
@@ -186,8 +186,8 @@
   }
   
   .close-button {
-    top: 10px;
-    right: 10px;
+    top: 0px;
+    right: 8px;
     width: 40px;
     height: 40px;
     font-size: 22px;
@@ -232,8 +232,8 @@
   }
   
   .close-button {
-    top: 8px;
-    right: 8px;
+    top: 0px;
+    right: 0px;
     width: 40px;
     height: 40px;
     font-size: 20px;

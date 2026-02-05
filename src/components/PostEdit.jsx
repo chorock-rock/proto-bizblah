@@ -19,6 +19,14 @@ const PostEdit = ({ post, onClose, onSuccess }) => {
     }
   }, [post]);
 
+  // 모달이 열릴 때 body 스크롤 막기
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     

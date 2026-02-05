@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { db } from '../firebase';
-import { collection, query, orderBy, onSnapshot, doc, updateDoc } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import './AdminSuggestions.css';
 
 const AdminSuggestions = () => {
@@ -37,8 +37,15 @@ const AdminSuggestions = () => {
       setUpdatingStatus(suggestionId);
       await updateDoc(doc(db, 'suggestions', suggestionId), {
         status: newStatus,
-        updatedAt: new Date()
+        updatedAt: serverTimestamp()
       });
+      // 선택된 건의사항의 상태도 즉시 업데이트
+      if (selectedSuggestion && selectedSuggestion.id === suggestionId) {
+        setSelectedSuggestion({
+          ...selectedSuggestion,
+          status: newStatus
+        });
+      }
     } catch (error) {
       console.error('상태 변경 오류:', error);
       alert('상태 변경에 실패했습니다.');
@@ -75,8 +82,10 @@ const AdminSuggestions = () => {
     return (
       <div className="admin-suggestions">
         <div className="admin-suggestion-detail">
-          <button className="back-button" onClick={() => setSelectedSuggestion(null)}>
-            ← 목록으로
+          <button className="back-to-list-button" onClick={() => setSelectedSuggestion(null)}>
+            <svg className="back-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
           </button>
           <div className="suggestion-detail-header">
             <h2 className="suggestion-detail-title">{selectedSuggestion.title}</h2>

@@ -94,6 +94,25 @@
   height: 20px;
 }
 
+.reselect-brand-button {
+  width: 100%;
+  padding: 10px 16px;
+  background: transparent;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.reselect-brand-button:hover {
+  background: #f8f9fa;
+  border-color: #c4c7c5;
+  color: #333;
+}
+
 .privacy-note {
   font-size: 12px;
   color: #999;
@@ -150,5 +169,10 @@
   
   .privacy-note {
     font-size: 11px;
+  }
+  
+  .reselect-brand-button {
+    font-size: 13px;
+    padding: 8px 14px;
   }
 }

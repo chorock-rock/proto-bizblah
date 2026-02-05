@@ -47,28 +47,23 @@
 
 .back-button {
   position: absolute;
-  white-space: nowrap;
   left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  background: var(--color-bg-secondary);
-  border: 1px solid var(--color-border-primary);
+  background: none;
+  border: none;
   color: var(--color-text-primary);
   cursor: pointer;
-  padding: 8px 12px;
+  padding: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  border-radius: 8px;
-  transition: all 0.2s ease;
+  transition: opacity 0.2s ease;
   z-index: 10;
-  font-size: 14px;
-  font-weight: 500;
 }
 
 .back-button:hover {
-  color: #000000;
+  opacity: 0.7;
 }
 
 .back-icon {
@@ -157,7 +152,7 @@
 }
 
 .post-detail-content {
-  padding: 24px;
+  padding: 0px 24px;
   border-bottom: 1px solid var(--color-border-primary);
 }
 
@@ -516,7 +511,7 @@
   border-radius: 8px;
   font-size: 14px;
   font-family: inherit;
-  resize: vertical;
+  resize: none;
   background: var(--color-bg-primary);
   color: var(--color-text-black);
   transition: border-color 0.2s ease;
@@ -581,8 +576,6 @@
   
   .back-button {
     left: 8px;
-    width: 36px;
-    height: 36px;
     padding: 6px;
   }
   
@@ -619,7 +612,7 @@
   }
   
   .post-detail-content {
-    padding: 20px;
+    padding: 0px 20px;
   }
   
   .post-detail-title-wrapper {
@@ -720,8 +713,6 @@
   
   .back-button {
     left: 4px;
-    width: 32px;
-    height: 32px;
     padding: 4px;
   }
   
@@ -767,7 +758,7 @@
   }
   
   .post-detail-content {
-    padding: 16px;
+    padding: 0px 16px;
   }
   
   .post-detail-title-wrapper {

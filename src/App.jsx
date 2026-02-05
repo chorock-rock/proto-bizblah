@@ -177,8 +177,22 @@ function AppContent() {
               // 로그인했지만 브랜드가 없으면 브랜드 선택 화면 표시
               <BrandSelection onSelect={selectBrand} />
             ) : showNicknameSetup ? (
+              // 닉네임 설정 화면
               <NicknameSetup onComplete={handleNicknameComplete} />
+            ) : userProfile && userProfile.brand && selectedBrand ? (
+              // 프로필이 있고 브랜드도 있으면 게시판으로 이동
+              <>
+                <Header currentView={currentView} onViewChange={setCurrentView} />
+                <MainContent currentView={currentView} />
+                {showBusinessNumberModal && (
+                  <BusinessNumberModal
+                    onVerify={handleBusinessNumberVerify}
+                    onClose={() => setShowBusinessNumberModal(false)}
+                  />
+                )}
+              </>
             ) : (
+              // 프로필이 없거나 브랜드가 없지만 selectedBrand가 있으면 게시판 (닉네임 설정은 useEffect에서 처리)
               <>
                 <Header currentView={currentView} onViewChange={setCurrentView} />
                 <MainContent currentView={currentView} />

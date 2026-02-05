@@ -143,6 +143,11 @@ const Comment = ({ comment, postId, currentUser }) => {
         repliesCount: increment(1)
       });
 
+      // 게시글의 댓글 카운트도 증가 (대댓글 포함)
+      await updateDoc(doc(db, 'posts', postId), {
+        commentsCount: increment(1)
+      });
+
       // 대댓글 작성 이벤트 추적
       if (analytics) {
         logEvent(analytics, 'reply_create', {

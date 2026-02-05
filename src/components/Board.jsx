@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { db, analytics } from '../firebase';
-import { collection, query, orderBy, onSnapshot, where, doc, getDoc, setDoc, updateDoc, increment, serverTimestamp } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, where, doc, getDoc, setDoc, updateDoc, increment, serverTimestamp, getDocs } from 'firebase/firestore';
 import { logEvent } from 'firebase/analytics';
 import PostWrite from './PostWrite';
 import './Board.css';
@@ -16,6 +16,7 @@ const Board = ({ filter = 'all' }) => {
   const [showWriteModal, setShowWriteModal] = useState(false);
   const [likedPosts, setLikedPosts] = useState({}); // { postId: true/false }
   const [animatingPosts, setAnimatingPosts] = useState({}); // { postId: true/false }
+  const [commentsCounts, setCommentsCounts] = useState({}); // { postId: totalCount }
   const scrollRestoredRef = useRef(false);
 
   useEffect(() => {
@@ -68,6 +69,40 @@ const Board = ({ filter = 'all' }) => {
       } else {
         setLikedPosts({});
       }
+
+      // 각 게시글의 댓글과 대댓글 수 계산
+      const counts = {};
+      await Promise.all(
+        postsData.map(async (post) => {
+          try {
+            // 댓글 가져오기
+            const commentsQuery = query(
+              collection(db, 'posts', post.id, 'comments'),
+              orderBy('createdAt', 'asc')
+            );
+            const commentsSnapshot = await getDocs(commentsQuery);
+            let totalCount = commentsSnapshot.size; // 댓글 수
+
+            // 각 댓글의 대댓글 수 추가
+            await Promise.all(
+              commentsSnapshot.docs.map(async (commentDoc) => {
+                const repliesQuery = query(
+                  collection(db, 'posts', post.id, 'comments', commentDoc.id, 'replies')
+                );
+                const repliesSnapshot = await getDocs(repliesQuery);
+                totalCount += repliesSnapshot.size; // 대댓글 수 추가
+              })
+            );
+
+            counts[post.id] = totalCount;
+          } catch (error) {
+            console.error(`게시글 ${post.id} 댓글 수 계산 오류:`, error);
+            // 오류 발생 시 기존 commentsCount 사용
+            counts[post.id] = post.commentsCount || 0;
+          }
+        })
+      );
+      setCommentsCounts(counts);
       
       setLoading(false);
     }, (error) => {
@@ -263,7 +298,7 @@ const Board = ({ filter = 'all' }) => {
                       <svg className="post-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
                       </svg>
-                      {post.commentsCount || 0}
+                      {commentsCounts[post.id] !== undefined ? commentsCounts[post.id] : (post.commentsCount || 0)}
                     </span>
                     <span className="post-views">
                       <svg className="post-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

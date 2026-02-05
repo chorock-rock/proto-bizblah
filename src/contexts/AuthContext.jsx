@@ -2,10 +2,11 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { 
   signInWithPopup, 
   signOut, 
-  onAuthStateChanged 
+  onAuthStateChanged,
+  deleteUser
 } from 'firebase/auth';
 import { auth, googleProvider, db } from '../firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, deleteDoc } from 'firebase/firestore';
 
 const BRAND_LABELS = {
   megamgccoffee: '메가엠지씨커피',
@@ -71,6 +72,45 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // 회원탈퇴
+  const deleteAccount = async () => {
+    try {
+      if (!currentUser) {
+        throw new Error('로그인이 필요합니다.');
+      }
+
+      const userId = currentUser.uid;
+      
+      // Firestore에서 사용자 프로필 삭제
+      const userDocRef = doc(db, 'users', userId);
+      const userDoc = await getDoc(userDocRef);
+      
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        
+        // 닉네임 삭제
+        if (userData.nickname) {
+          const nicknameDocRef = doc(db, 'nicknames', userData.nickname);
+          await deleteDoc(nicknameDocRef);
+        }
+        
+        // 사용자 프로필 삭제
+        await deleteDoc(userDocRef);
+      }
+
+      // Firebase Auth에서 계정 삭제
+      await deleteUser(currentUser);
+      
+      // 로컬스토리지 초기화
+      localStorage.removeItem('selectedBrand');
+      setSelectedBrand(null);
+      setUserProfile(null);
+    } catch (error) {
+      console.error('회원탈퇴 오류:', error);
+      throw error;
+    }
+  };
+
   // 브랜드 이름 가져오기
   const getBrandLabel = () => {
     if (!selectedBrand) return '점주';
@@ -119,22 +159,36 @@ export const AuthProvider = ({ children }) => {
             localStorage.setItem('selectedBrand', customBrandValue);
           }
         } else {
-          // 프로필에 브랜드가 없으면 브랜드 초기화 (브랜드 선택 화면 표시)
-          setSelectedBrand(null);
-          localStorage.removeItem('selectedBrand');
+          // 프로필에 브랜드가 없으면 로그인 전에 선택한 브랜드 유지
+          const savedBrand = localStorage.getItem('selectedBrand');
+          if (!savedBrand) {
+            setSelectedBrand(null);
+          } else {
+            // 로그인 전에 선택한 브랜드가 있으면 유지
+            setSelectedBrand(savedBrand);
+          }
         }
       } else {
-        // 프로필이 없으면 브랜드 초기화 (브랜드 선택 화면 표시)
+        // 프로필이 없으면 로그인 전에 선택한 브랜드 유지
         setUserProfile(null);
-        setSelectedBrand(null);
-        localStorage.removeItem('selectedBrand');
+        const savedBrand = localStorage.getItem('selectedBrand');
+        if (!savedBrand) {
+          setSelectedBrand(null);
+        } else {
+          // 로그인 전에 선택한 브랜드가 있으면 유지
+          setSelectedBrand(savedBrand);
+        }
       }
     } catch (error) {
       console.error('프로필 가져오기 오류:', error);
       setUserProfile(null);
-      // 에러 발생 시 브랜드 초기화
-      setSelectedBrand(null);
-      localStorage.removeItem('selectedBrand');
+      // 에러 발생 시에도 로그인 전에 선택한 브랜드 유지
+      const savedBrand = localStorage.getItem('selectedBrand');
+      if (!savedBrand) {
+        setSelectedBrand(null);
+      } else {
+        setSelectedBrand(savedBrand);
+      }
     } finally {
       setProfileLoading(false);
     }
@@ -175,6 +229,7 @@ export const AuthProvider = ({ children }) => {
     selectBrand,
     signInWithGoogle,
     logout,
+    deleteAccount,
     getBrandLabel,
     getNickname,
     fetchUserProfile,

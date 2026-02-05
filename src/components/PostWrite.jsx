@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { db, analytics } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
@@ -11,6 +11,14 @@ const PostWrite = ({ onClose, onSuccess }) => {
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // 모달이 열릴 때 body 스크롤 막기
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

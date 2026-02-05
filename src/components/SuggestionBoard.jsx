@@ -129,8 +129,10 @@ const SuggestionBoard = () => {
     return (
       <div className="suggestion-board-container">
         <div className="suggestion-detail-view">
-          <button className="back-button" onClick={() => setSelectedSuggestion(null)}>
-            ← 목록으로
+          <button className="back-to-list-button" onClick={() => setSelectedSuggestion(null)}>
+            <svg className="back-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
           </button>
           <div className="suggestion-detail-header">
             <div className="suggestion-detail-title-wrapper">

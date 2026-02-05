@@ -5,9 +5,14 @@ import { logEvent } from 'firebase/analytics';
 import './Login.css';
 
 const Login = () => {
-  const { signInWithGoogle, selectedBrand, getBrandLabel } = useAuth();
+  const { signInWithGoogle, selectedBrand, getBrandLabel, selectBrand } = useAuth();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const handleReselectBrand = () => {
+    selectBrand(null);
+    localStorage.removeItem('selectedBrand');
+  };
 
   const handleGoogleSignIn = async () => {
     try {
@@ -50,6 +55,16 @@ const Login = () => {
             Google 계정으로 간편하게 로그인하고<br />
             익명 커뮤니티를 시작해보세요.
           </p>
+          
+          {selectedBrand && (
+            <button 
+              className="reselect-brand-button"
+              onClick={handleReselectBrand}
+              type="button"
+            >
+              브랜드 다시 선택하기
+            </button>
+          )}
           
           {error && <div className="error-message">{error}</div>}
           

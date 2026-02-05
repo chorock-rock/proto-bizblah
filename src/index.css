@@ -61,6 +61,10 @@ select {
   font-size: inherit;
 }
 
+textarea {
+  resize: none;
+}
+
 /* 터치 디바이스 최적화 */
 @media (hover: none) and (pointer: coarse) {
 }

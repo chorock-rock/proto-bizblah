@@ -131,6 +131,13 @@ const PostDetail = ({ postId, onClose }) => {
     return () => unsubscribe();
   }, [postId]);
 
+  // 모달이 열릴 때 body 스크롤 막기
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, []);
 
   const handleLike = async () => {
     if (!currentUser) return;
@@ -427,7 +434,7 @@ const PostDetail = ({ postId, onClose }) => {
         </div>
 
         <div className="comments-section">
-          <h3 className="comments-title">댓글 {comments.length}</h3>
+          <h3 className="comments-title">댓글 {comments.reduce((total, comment) => total + 1 + (comment.replies?.length || 0), 0)}</h3>
           
           <div className="comments-list">
             {comments.map((comment) => (

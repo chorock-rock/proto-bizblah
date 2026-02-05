@@ -110,21 +110,26 @@
   box-shadow: var(--shadow-sm);
 }
 
-.back-button {
+.back-to-list-button {
   background: none;
   border: none;
-  white-space: nowrap;
-  color:  var(--color-primary-dark);
-  font-size: 14px;
-  font-weight: 500;
+  color: var(--color-text-primary);
   cursor: pointer;
-  padding: 8px 0;
+  padding: 8px;
   margin-bottom: 16px;
-  transition: color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s ease;
 }
 
-.back-button:hover {
-  color: var(--color-primary-dark);
+.back-to-list-button:hover {
+  opacity: 0.7;
+}
+
+.back-to-list-button .back-icon {
+  width: 24px;
+  height: 24px;
 }
 
 .suggestion-detail-header {
