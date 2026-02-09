@@ -259,6 +259,11 @@ const BrandReview = () => {
       const reviewData = {
         brand: brandLabel, // 현재 사용자의 브랜드로만 저장
         authorId: currentUser.uid,
+        profitability: scores.profitability || 0,
+        support: scores.support || 0,
+        logistics: scores.logistics || 0,
+        competitiveness: scores.competitiveness || 0,
+        communication: scores.communication || 0,
         comment: comment.trim() || '', // 텍스트 입력 (빈 값 허용)
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
