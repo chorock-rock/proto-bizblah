@@ -9,12 +9,16 @@ import BrandSelection from './components/BrandSelection';
 import Login from './components/Login';
 import Header from './components/Header';
 import MainContent from './components/MainContent';
+import Footer from './components/Footer';
+import PrivacyPolicy from './components/PrivacyPolicy';
+import TermsOfService from './components/TermsOfService';
 import NicknameSetup from './components/NicknameSetup';
 import PostDetailPage from './components/PostDetailPage';
 import AdminLogin from './components/AdminLogin';
 import AdminDashboard from './components/AdminDashboard';
 import BusinessNumberModal from './components/BusinessNumberModal';
 import Welcome from './components/Welcome';
+import KakaoBrowserWarning from './components/KakaoBrowserWarning';
 import './App.css';
 
 function AppContent() {
@@ -57,10 +61,10 @@ function AppContent() {
   useSEO({
     title: isAdminPage ? '관리자 페이지' : isPostDetailPage ? '게시글 상세' : '홈',
     description: isAdminPage 
-      ? '비즈블라 관리자 페이지'
+      ? '비즈블라(BIZBLAH) 관리자 페이지'
       : isPostDetailPage 
-      ? '프랜차이즈 점주 커뮤니티 게시글을 확인하세요.'
-      : '프랜차이즈 점주를 위한 익명 커뮤니티. 안전하고 자유로운 소통 공간에서 정보를 공유하고 네트워킹하세요.',
+      ? '비즈블라(BIZBLAH) 프랜차이즈 점주 커뮤니티 게시글을 확인하세요.'
+      : '비즈블라(BIZBLAH) - 프랜차이즈 점주를 위한 익명 커뮤니티. 안전하고 자유로운 소통 공간에서 정보를 공유하고 네트워킹하세요.',
     url: location.pathname
   });
 
@@ -120,7 +124,9 @@ function AppContent() {
   };
 
   return (
-    <Routes>
+    <>
+      <KakaoBrowserWarning />
+      <Routes>
       {/* 관리자 페이지 */}
       <Route 
         path="/admin/login" 
@@ -155,6 +161,18 @@ function AppContent() {
         } 
       />
       
+      {/* 개인정보처리방침 */}
+      <Route 
+        path="/privacy" 
+        element={<PrivacyPolicy />} 
+      />
+      
+      {/* 이용약관 */}
+      <Route 
+        path="/terms" 
+        element={<TermsOfService />} 
+      />
+      
       {/* 메인 앱 라우트 */}
       <Route
         path="/*"
@@ -184,6 +202,7 @@ function AppContent() {
               <>
                 <Header currentView={currentView} onViewChange={setCurrentView} />
                 <MainContent currentView={currentView} />
+                <Footer />
                 {showBusinessNumberModal && (
                   <BusinessNumberModal
                     onVerify={handleBusinessNumberVerify}
@@ -196,6 +215,7 @@ function AppContent() {
               <>
                 <Header currentView={currentView} onViewChange={setCurrentView} />
                 <MainContent currentView={currentView} />
+                <Footer />
                 {showBusinessNumberModal && (
                   <BusinessNumberModal
                     onVerify={handleBusinessNumberVerify}
@@ -208,6 +228,7 @@ function AppContent() {
         }
       />
     </Routes>
+    </>
   );
 }
 

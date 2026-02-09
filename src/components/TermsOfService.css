@@ -1,0 +1,121 @@
+.terms-page {
+  min-height: 100vh;
+  background: var(--color-bg-secondary);
+  padding: 24px 0;
+}
+
+.terms-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 24px;
+  background: var(--color-bg-primary);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+  padding: 32px;
+}
+
+.terms-back-button {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 8px 0;
+  margin-bottom: 24px;
+  transition: color 0.2s ease;
+}
+
+.terms-back-button:hover {
+  color: var(--color-primary);
+}
+
+.terms-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0 0 16px 0;
+}
+
+.terms-updated {
+  font-size: 14px;
+  color: var(--color-text-tertiary);
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--color-border-primary);
+}
+
+.terms-content {
+  line-height: 1.8;
+  color: var(--color-text-primary);
+}
+
+.terms-section {
+  margin-bottom: 40px;
+}
+
+.terms-section h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 16px 0;
+}
+
+.terms-section p {
+  font-size: 15px;
+  color: var(--color-text-secondary);
+  margin: 0 0 12px 0;
+}
+
+.terms-section ul {
+  margin: 12px 0;
+  padding-left: 24px;
+}
+
+.terms-section li {
+  font-size: 15px;
+  color: var(--color-text-secondary);
+  margin-bottom: 8px;
+  line-height: 1.6;
+}
+
+.terms-contact {
+  background: var(--color-bg-secondary);
+  padding: 16px;
+  border-radius: 8px;
+  margin-top: 16px;
+}
+
+.terms-contact p {
+  margin: 8px 0;
+  font-size: 15px;
+  color: var(--color-text-primary);
+}
+
+.terms-contact strong {
+  color: var(--color-text-primary);
+  margin-right: 8px;
+}
+
+@media (max-width: 768px) {
+  .terms-page {
+    padding: 16px 0;
+  }
+
+  .terms-container {
+    padding: 24px 16px;
+    border-radius: 0;
+  }
+
+  .terms-title {
+    font-size: 24px;
+  }
+
+  .terms-section h2 {
+    font-size: 18px;
+  }
+
+  .terms-section p,
+  .terms-section li {
+    font-size: 14px;
+  }
+}

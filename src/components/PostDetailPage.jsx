@@ -6,6 +6,7 @@ import { db } from '../firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import Header from './Header';
 import MainContent from './MainContent';
+import Footer from './Footer';
 import PostDetail from './PostDetail';
 
 const PostDetailPage = ({ currentView = 'all', onViewChange }) => {
@@ -38,7 +39,7 @@ const PostDetailPage = ({ currentView = 'all', onViewChange }) => {
     description: post 
       ? post.content 
         ? post.content.substring(0, 150).replace(/\n/g, ' ') + '...'
-        : '프랜차이즈 점주 커뮤니티 게시글을 확인하세요.'
+        : '비즈블라(BIZBLAH) 프랜차이즈 점주 커뮤니티 게시글을 확인하세요.'
       : '게시글을 불러오는 중...',
     url: `/post/${postId}`
   });
@@ -72,6 +73,7 @@ const PostDetailPage = ({ currentView = 'all', onViewChange }) => {
     <>
       <Header currentView={currentView} onViewChange={onViewChange} />
       <MainContent currentView={currentView} />
+      <Footer />
       <PostDetail postId={postId} onClose={handleClose} />
     </>
   );

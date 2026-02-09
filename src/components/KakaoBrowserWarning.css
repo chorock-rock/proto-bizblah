@@ -1,0 +1,131 @@
+.kakao-browser-warning-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  padding: 20px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.kakao-browser-warning-modal {
+  background: var(--color-bg-primary);
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.kakao-browser-warning-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.kakao-browser-warning-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0 0 16px 0;
+}
+
+.kakao-browser-warning-message {
+  font-size: 15px;
+  color: var(--color-text-secondary);
+  margin: 0 0 12px 0;
+  line-height: 1.6;
+}
+
+.kakao-browser-warning-submessage {
+  font-size: 13px;
+  color: var(--color-text-tertiary);
+  margin: 0 0 24px 0;
+  line-height: 1.5;
+}
+
+.kakao-browser-warning-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.kakao-browser-warning-button {
+  background: linear-gradient(135deg, var(--color-primary-gradient-start) 0%, var(--color-primary-gradient-end) 100%);
+  color: var(--color-text-white);
+  border: none;
+  border-radius: 8px;
+  padding: 14px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.kakao-browser-warning-button:hover {
+  background: linear-gradient(135deg, var(--color-primary-gradient-hover-start) 0%, var(--color-primary-gradient-hover-end) 100%);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.kakao-browser-warning-button:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 480px) {
+  .kakao-browser-warning-modal {
+    padding: 24px;
+    border-radius: 12px;
+  }
+
+  .kakao-browser-warning-icon {
+    font-size: 40px;
+    margin-bottom: 12px;
+  }
+
+  .kakao-browser-warning-title {
+    font-size: 18px;
+    margin-bottom: 12px;
+  }
+
+  .kakao-browser-warning-message {
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+
+  .kakao-browser-warning-submessage {
+    font-size: 12px;
+    margin-bottom: 20px;
+  }
+
+  .kakao-browser-warning-button {
+    padding: 12px 20px;
+    font-size: 14px;
+  }
+}

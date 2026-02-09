@@ -1,0 +1,155 @@
+.footer {
+  background: var(--color-bg-primary);
+  border-top: 1px solid var(--color-border-primary);
+  margin-top: auto;
+  padding: 12px 0;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.footer-info {
+  display: flex;
+  align-items: flex-start;
+}
+
+.footer-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.footer-phone {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.footer-label {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.footer-phone-link {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.footer-phone-link:hover {
+  color: var(--color-primary-gradient-end);
+}
+
+.footer-links {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.footer-link {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.footer-link:hover {
+  color: var(--color-primary);
+}
+
+.footer-divider {
+  color: var(--color-border-primary);
+  font-size: 12px;
+}
+
+.footer-copyright {
+  text-align: left;
+}
+
+.footer-copyright p {
+  margin: 0;
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+}
+
+@media (max-width: 768px) {
+  .footer {
+    padding: 10px 0;
+  }
+
+  .footer-content {
+    padding: 0 16px;
+  }
+
+  .footer-info {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .footer-left {
+    width: 100%;
+  }
+
+  .footer-phone {
+    width: 100%;
+  }
+
+  .footer-links {
+    width: 100%;
+    flex-wrap: wrap;
+    margin-top: 2px;
+  }
+
+  .footer-copyright {
+    text-align: left;
+  }
+
+  .footer-copyright p {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer {
+    padding: 8px 0;
+  }
+
+  .footer-content {
+    padding: 0 12px;
+  }
+
+  .footer-info {
+    gap: 6px;
+  }
+
+  .footer-left {
+    gap: 3px;
+  }
+
+  .footer-label {
+    font-size: 11px;
+  }
+
+  .footer-phone-link {
+    font-size: 13px;
+  }
+
+  .footer-link {
+    font-size: 11px;
+  }
+
+  .footer-divider {
+    font-size: 11px;
+  }
+
+  .footer-copyright p {
+    font-size: 9px;
+  }
+}

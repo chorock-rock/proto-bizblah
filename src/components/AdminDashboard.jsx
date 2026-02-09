@@ -16,6 +16,7 @@ const AdminDashboard = () => {
   const [posts, setPosts] = useState([]);
   const [users, setUsers] = useState([]);
   const [chartData, setChartData] = useState([]);
+  const [brandUserCounts, setBrandUserCounts] = useState({});
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
@@ -61,6 +62,9 @@ const AdminDashboard = () => {
         }));
         setUsers(usersData);
 
+        // 브랜드별 사용자 수 계산
+        calculateBrandUserCounts(usersData);
+
         // 차트 데이터 계산
         calculateChartData(postsData, usersData);
       } catch (error) {
@@ -75,6 +79,15 @@ const AdminDashboard = () => {
 
     return () => unsubscribePosts();
   }, [isAdmin, navigate]);
+
+  const calculateBrandUserCounts = (usersData) => {
+    const counts = {};
+    usersData.forEach(user => {
+      const brand = user.brand || '브랜드 미지정';
+      counts[brand] = (counts[brand] || 0) + 1;
+    });
+    setBrandUserCounts(counts);
+  };
 
   const calculateChartData = (postsData, usersData) => {
     // 최근 7일 데이터 생성
@@ -241,6 +254,27 @@ const AdminDashboard = () => {
                 <div className="stat-value">{loading ? '...' : users.length}</div>
                 <div className="stat-label">전체 가입자</div>
               </div>
+            </div>
+            <div className="admin-brand-stats-section">
+              <h2 className="chart-title">브랜드별 사용자 수</h2>
+              {loading ? (
+                <div className="loading">로딩 중...</div>
+              ) : (
+                <div className="brand-stats-grid">
+                  {Object.keys(brandUserCounts).length === 0 ? (
+                    <div className="no-brand-data">브랜드 데이터가 없습니다.</div>
+                  ) : (
+                    Object.entries(brandUserCounts)
+                      .sort((a, b) => b[1] - a[1]) // 사용자 수가 많은 순으로 정렬
+                      .map(([brand, count]) => (
+                        <div key={brand} className="brand-stat-card">
+                          <div className="brand-stat-name">{brand}</div>
+                          <div className="brand-stat-count">{count}명</div>
+                        </div>
+                      ))
+                  )}
+                </div>
+              )}
             </div>
             <div className="admin-chart-section">
               <h2 className="chart-title">일일 통계 (최근 7일)</h2>

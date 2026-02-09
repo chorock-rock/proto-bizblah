@@ -1,0 +1,121 @@
+.policy-page {
+  min-height: 100vh;
+  background: var(--color-bg-secondary);
+  padding: 24px 0;
+}
+
+.policy-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 24px;
+  background: var(--color-bg-primary);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+  padding: 32px;
+}
+
+.policy-back-button {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 8px 0;
+  margin-bottom: 24px;
+  transition: color 0.2s ease;
+}
+
+.policy-back-button:hover {
+  color: var(--color-primary);
+}
+
+.policy-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0 0 16px 0;
+}
+
+.policy-updated {
+  font-size: 14px;
+  color: var(--color-text-tertiary);
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--color-border-primary);
+}
+
+.policy-content {
+  line-height: 1.8;
+  color: var(--color-text-primary);
+}
+
+.policy-section {
+  margin-bottom: 40px;
+}
+
+.policy-section h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 16px 0;
+}
+
+.policy-section p {
+  font-size: 15px;
+  color: var(--color-text-secondary);
+  margin: 0 0 12px 0;
+}
+
+.policy-section ul {
+  margin: 12px 0;
+  padding-left: 24px;
+}
+
+.policy-section li {
+  font-size: 15px;
+  color: var(--color-text-secondary);
+  margin-bottom: 8px;
+  line-height: 1.6;
+}
+
+.policy-contact {
+  background: var(--color-bg-secondary);
+  padding: 16px;
+  border-radius: 8px;
+  margin-top: 16px;
+}
+
+.policy-contact p {
+  margin: 8px 0;
+  font-size: 15px;
+  color: var(--color-text-primary);
+}
+
+.policy-contact strong {
+  color: var(--color-text-primary);
+  margin-right: 8px;
+}
+
+@media (max-width: 768px) {
+  .policy-page {
+    padding: 16px 0;
+  }
+
+  .policy-container {
+    padding: 24px 16px;
+    border-radius: 0;
+  }
+
+  .policy-title {
+    font-size: 24px;
+  }
+
+  .policy-section h2 {
+    font-size: 18px;
+  }
+
+  .policy-section p,
+  .policy-section li {
+    font-size: 14px;
+  }
+}

@@ -14,7 +14,7 @@ const Welcome = ({ onStart }) => {
         <div className="welcome-description">
           <p className="welcome-text">혼자 고민하지 마세요.</p>
           <p className="welcome-text">
-            자영업 운영의 모든 질문을
+            프랜차이즈 운영의 모든 질문을
           </p>
           <p className="welcome-text">
             <span className="highlight">점주끼리 실시간</span>으로 나눕니다.

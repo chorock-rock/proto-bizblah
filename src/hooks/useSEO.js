@@ -20,8 +20,8 @@ export const useSEO = ({
     const baseUrl = window.location.origin;
     const fullUrl = url ? `${baseUrl}${url}` : baseUrl;
     const defaultImage = `${baseUrl}/og-image.png`;
-    const defaultDescription = 'BIZBLAH - 프랜차이즈 점주를 위한 익명 커뮤니티. 안전하고 자유로운 소통 공간에서 정보를 공유하고 네트워킹하세요.';
-    const defaultTitle = 'BIZBLAH - 프랜차이즈 점주 익명 커뮤니티';
+    const defaultDescription = '비즈블라(BIZBLAH) - 프랜차이즈 점주를 위한 익명 커뮤니티. 안전하고 자유로운 소통 공간에서 정보를 공유하고 네트워킹하세요.';
+    const defaultTitle = '비즈블라(BIZBLAH) - 프랜차이즈 점주 익명 커뮤니티';
     
     const finalTitle = title ? `${title} | ${defaultTitle}` : defaultTitle;
     const finalDescription = description || defaultDescription;
@@ -33,6 +33,9 @@ export const useSEO = ({
 
     // Meta description 업데이트
     updateMetaTag('name', 'description', finalDescription);
+    
+    // Meta keywords 업데이트
+    updateMetaTag('name', 'keywords', '비즈블라, BIZBLAH, 프랜차이즈, 점주, 커뮤니티, 익명, 정보공유, 네트워킹, 프랜차이즈 점주, 점주 커뮤니티, 비즈블라 커뮤니티');
     
     // Open Graph 태그 업데이트
     updateMetaTag('property', 'og:title', finalTitle);

@@ -309,6 +309,12 @@ const BrandReview = () => {
         <div className="no-access-message">
           <h2>리뷰 작성 후 이용 가능합니다</h2>
           <p>브랜드 리뷰를 보시려면 먼저 리뷰를 작성해주세요.</p>
+          <button
+            className="write-review-button"
+            onClick={() => setShowReviewForm(true)}
+          >
+            리뷰 작성하기
+          </button>
         </div>
       </div>
     );
@@ -326,7 +332,7 @@ const BrandReview = () => {
   return (
     <div className={`brand-review-container ${showReviewForm ? 'blurred' : ''}`}>
       <div className="brand-review-header">
-        <h2 className="brand-review-title">브랜드 리뷰</h2>
+        <h2 className="brand-review-title">{getBrandLabel()} 리뷰</h2>
         <p className="brand-review-subtitle">{getBrandLabel()} 점주님들의 평가</p>
       </div>
 
