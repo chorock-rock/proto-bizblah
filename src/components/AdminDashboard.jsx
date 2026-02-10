@@ -64,13 +64,19 @@ const AdminDashboard = () => {
           ...doc.data(),
           createdAt: doc.data().createdAt?.toDate() || doc.data().createdAt || new Date()
         }));
-        setUsers(usersData);
+        
+        // admin에서 생성한 사용자 제외
+        const filteredUsersData = usersData.filter(user => {
+          return !(user.id && (user.id.startsWith('admin_') || user.id.startsWith('dummy_')));
+        });
+        
+        setUsers(filteredUsersData);
 
         // 브랜드별 사용자 수 계산
-        calculateBrandUserCounts(usersData);
+        calculateBrandUserCounts(filteredUsersData);
 
         // 차트 데이터 계산
-        calculateChartData(postsData, usersData);
+        calculateChartData(postsData, filteredUsersData);
       } catch (error) {
         console.error('사용자 데이터 가져오기 오류:', error);
       }
@@ -87,6 +93,10 @@ const AdminDashboard = () => {
   const calculateBrandUserCounts = (usersData) => {
     const counts = {};
     usersData.forEach(user => {
+      // admin에서 생성한 사용자 제외 (userId가 'admin_'로 시작하거나 'dummy_'로 시작하는 경우)
+      if (user.id && (user.id.startsWith('admin_') || user.id.startsWith('dummy_'))) {
+        return;
+      }
       const brand = user.brand || '브랜드 미지정';
       counts[brand] = (counts[brand] || 0) + 1;
     });
