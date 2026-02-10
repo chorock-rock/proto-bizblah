@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { db } from '../firebase';
-import { collection, query, orderBy, getDocs, getDoc, addDoc, doc, serverTimestamp, setDoc, updateDoc, increment, onSnapshot } from 'firebase/firestore';
+import { collection, query, orderBy, getDocs, getDoc, addDoc, doc, serverTimestamp, setDoc, updateDoc, increment, onSnapshot, where } from 'firebase/firestore';
 import './AdminPostManagement.css';
 
 const AdminPostManagement = () => {
@@ -11,7 +11,76 @@ const AdminPostManagement = () => {
   
   // 닉네임 생성
   const [nickname, setNickname] = useState('');
-  const [nicknameBrand, setNicknameBrand] = useState('점주');
+  const [nicknameBrand, setNicknameBrand] = useState('CU');
+  const [nicknameBrandLabel, setNicknameBrandLabel] = useState('CU');
+  const [customBrand, setCustomBrand] = useState('');
+  const [isCustomBrand, setIsCustomBrand] = useState(false);
+  const [generatingNickname, setGeneratingNickname] = useState(false);
+  const [brandSearchQuery, setBrandSearchQuery] = useState('');
+  const [isBrandDropdownOpen, setIsBrandDropdownOpen] = useState(false);
+  const [filteredBrands, setFilteredBrands] = useState([]);
+  const brandDropdownRef = useRef(null);
+
+  // 닉네임 생성용 영어 단어 목록
+  const words = [
+    'zap', 'blip', 'flip', 'snap', 'pop', 'bop', 'hop', 'zip',
+    'wiz', 'buzz', 'fizz', 'jazz', 'jolt', 'bolt', 'volt', 'zest',
+    'blink', 'twink', 'spark', 'flash', 'dash', 'crash', 'smash', 'splash',
+    'zoom', 'boom', 'doom', 'gloom', 'bloom', 'room', 'loom', 'broom',
+    'chip', 'clip', 'flip', 'grip', 'skip', 'slip', 'trip', 'whip',
+    'blob', 'glob', 'slob', 'snob', 'knob', 'mob', 'rob', 'sob',
+    'flap', 'clap', 'slap', 'snap', 'trap', 'wrap', 'scrap', 'strap',
+    'blink', 'clink', 'drink', 'link', 'pink', 'sink', 'think', 'wink',
+    'blot', 'clot', 'plot', 'slot', 'spot', 'tot', 'dot', 'hot',
+    'blur', 'slur', 'spur', 'stir', 'fir', 'sir', 'fur', 'purr',
+    'blip', 'clip', 'dip', 'flip', 'grip', 'hip', 'lip', 'rip',
+    'blob', 'cob', 'gob', 'job', 'lob', 'mob', 'rob', 'sob',
+    'blot', 'clot', 'dot', 'got', 'hot', 'jot', 'lot', 'not',
+    'blur', 'cur', 'fur', 'her', 'purr', 'sir', 'stir', 'whir',
+    'blip', 'dip', 'flip', 'grip', 'hip', 'kip', 'lip', 'nip',
+    'blob', 'cob', 'gob', 'job', 'lob', 'mob', 'rob', 'sob'
+  ];
+
+  // 고유한 닉네임 생성 함수
+  const generateUniqueNickname = async () => {
+    setGeneratingNickname(true);
+    setMessage('');
+
+    try {
+      let attempts = 0;
+      const maxAttempts = 50;
+
+      while (attempts < maxAttempts) {
+        // 영어 단어 + 숫자 조합
+        const randomWord = words[Math.floor(Math.random() * words.length)];
+        const randomNumber = Math.floor(Math.random() * 9999) + 1;
+        const generatedNickname = `${randomWord}${randomNumber}`;
+
+        // 중복 확인
+        const nicknameCheck = await getDoc(doc(db, 'nicknames', generatedNickname));
+        
+        if (!nicknameCheck.exists()) {
+          setNickname(generatedNickname);
+          setGeneratingNickname(false);
+          return;
+        }
+
+        attempts++;
+      }
+
+      // 최대 시도 횟수 초과 시 타임스탬프 추가
+      const randomWord = words[Math.floor(Math.random() * words.length)];
+      const timestamp = Date.now().toString().slice(-6);
+      const generatedNickname = `${randomWord}${timestamp}`;
+      
+      setNickname(generatedNickname);
+      setGeneratingNickname(false);
+    } catch (err) {
+      console.error('닉네임 생성 오류:', err);
+      setMessage('닉네임 생성에 실패했습니다. 다시 시도해주세요.');
+      setGeneratingNickname(false);
+    }
+  };
   
   // 게시글 생성
   const [postTitle, setPostTitle] = useState('');
@@ -27,6 +96,8 @@ const AdminPostManagement = () => {
   const [replyAuthorId, setReplyAuthorId] = useState('');
   
   const [users, setUsers] = useState([]);
+  const [brands, setBrands] = useState([]);
+  const [brandsLoading, setBrandsLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [postsLoading, setPostsLoading] = useState(true);
@@ -76,6 +147,96 @@ const AdminPostManagement = () => {
 
     loadUsers();
   }, []);
+
+  // 브랜드 목록 로드
+  useEffect(() => {
+    const loadBrands = async () => {
+      try {
+        setBrandsLoading(true);
+        const brandsQuery = query(
+          collection(db, 'brands'),
+          where('isActive', '==', true),
+          orderBy('name', 'asc')
+        );
+        const snapshot = await getDocs(brandsQuery);
+        const brandsData = snapshot.docs.map(doc => ({
+          id: doc.id,
+          name: doc.data().name,
+          ...doc.data()
+        }));
+        setBrands(brandsData);
+        
+        // CU 브랜드가 있으면 기본값으로 설정
+        const cuBrand = brandsData.find(b => b.name === 'CU');
+        if (cuBrand) {
+          setNicknameBrand('CU');
+          setNicknameBrandLabel('CU');
+        }
+        setFilteredBrands(brandsData);
+      } catch (error) {
+        console.error('브랜드 로드 오류:', error);
+        // 인덱스 오류일 수 있으므로 name 없이 다시 시도
+        try {
+          const brandsQuery = query(
+            collection(db, 'brands'),
+            where('isActive', '==', true)
+          );
+          const snapshot = await getDocs(brandsQuery);
+          const brandsData = snapshot.docs.map(doc => ({
+            id: doc.id,
+            name: doc.data().name,
+            ...doc.data()
+          })).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+          setBrands(brandsData);
+          
+          // CU 브랜드가 있으면 기본값으로 설정
+          const cuBrand = brandsData.find(b => b.name === 'CU');
+          if (cuBrand) {
+            setNicknameBrand('CU');
+            setNicknameBrandLabel('CU');
+          }
+          setFilteredBrands(brandsData);
+        } catch (retryError) {
+          console.error('브랜드 로드 재시도 오류:', retryError);
+        }
+      } finally {
+        setBrandsLoading(false);
+      }
+    };
+
+    loadBrands();
+  }, []);
+
+  // 브랜드 검색 필터링
+  useEffect(() => {
+    if (!brandSearchQuery.trim()) {
+      setFilteredBrands(brands);
+    } else {
+      const searchLower = brandSearchQuery.toLowerCase();
+      const filtered = brands.filter(brand => 
+        brand.name.toLowerCase().includes(searchLower)
+      );
+      setFilteredBrands(filtered);
+    }
+  }, [brandSearchQuery, brands]);
+
+  // 브랜드 드롭다운 외부 클릭 시 닫기
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (brandDropdownRef.current && !brandDropdownRef.current.contains(event.target)) {
+        setIsBrandDropdownOpen(false);
+        setBrandSearchQuery('');
+      }
+    };
+
+    if (isBrandDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isBrandDropdownOpen]);
 
   // 게시글 선택 시 댓글 목록 실시간 구독
   useEffect(() => {
@@ -201,10 +362,15 @@ const AdminPostManagement = () => {
 
       const userId = `admin_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
+      // 브랜드 값 처리
+      const brandValue = isCustomBrand 
+        ? (customBrand.trim() || 'CU')
+        : (nicknameBrand.trim() || 'CU');
+
       // users 컬렉션에 사용자 추가
       await setDoc(doc(db, 'users', userId), {
         nickname: nickname.trim(),
-        brand: nicknameBrand.trim() || '점주',
+        brand: brandValue,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       });
@@ -415,28 +581,112 @@ const AdminPostManagement = () => {
           </p>
           <div className="form-group">
             <label htmlFor="nickname">닉네임 (2-20자)</label>
-            <input
-              id="nickname"
-              type="text"
-              value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
-              placeholder="닉네임을 입력하세요"
-              maxLength={20}
-              disabled={loading}
-              className="text-input"
-            />
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <input
+                id="nickname"
+                type="text"
+                value={nickname}
+                onChange={(e) => setNickname(e.target.value)}
+                placeholder="닉네임을 입력하세요"
+                maxLength={20}
+                disabled={loading || generatingNickname}
+                className="text-input"
+                style={{ flex: 1 }}
+              />
+              <button
+                type="button"
+                onClick={generateUniqueNickname}
+                disabled={loading || generatingNickname}
+                className="dice-button"
+                title="랜덤 닉네임 생성"
+              >
+                🎲
+              </button>
+            </div>
           </div>
           <div className="form-group">
             <label htmlFor="nicknameBrand">브랜드</label>
-            <input
-              id="nicknameBrand"
-              type="text"
-              value={nicknameBrand}
-              onChange={(e) => setNicknameBrand(e.target.value)}
-              placeholder="브랜드명을 입력하세요"
-              disabled={loading}
-              className="text-input"
-            />
+            {brandsLoading ? (
+              <div className="loading">브랜드 로딩 중...</div>
+            ) : (
+              <div className="brand-select-wrapper" ref={brandDropdownRef}>
+                <div className="brand-search-input-wrapper">
+                  <input
+                    type="text"
+                    value={isBrandDropdownOpen ? brandSearchQuery : nicknameBrandLabel}
+                    onChange={(e) => {
+                      setBrandSearchQuery(e.target.value);
+                      setIsBrandDropdownOpen(true);
+                    }}
+                    onFocus={() => {
+                      setIsBrandDropdownOpen(true);
+                      setBrandSearchQuery('');
+                    }}
+                    placeholder="브랜드를 검색하거나 선택해주세요"
+                    disabled={loading || isCustomBrand}
+                    className="text-input"
+                  />
+                  <svg 
+                    className="brand-dropdown-icon" 
+                    viewBox="0 0 12 12" 
+                    onClick={() => !isCustomBrand && setIsBrandDropdownOpen(!isBrandDropdownOpen)}
+                    style={{ cursor: 'pointer', width: '16px', height: '16px', flexShrink: 0 }}
+                  >
+                    <path fill="#333" d="M6 9L1 4h10z"/>
+                  </svg>
+                </div>
+                
+                {isBrandDropdownOpen && !isCustomBrand && (
+                  <div className="brand-dropdown">
+                    {filteredBrands.length > 0 ? (
+                      <>
+                        {filteredBrands.map((brand) => (
+                          <div
+                            key={brand.id}
+                            className={`brand-option ${nicknameBrand === brand.name ? 'selected' : ''}`}
+                            onClick={() => {
+                              setNicknameBrand(brand.name);
+                              setNicknameBrandLabel(brand.name);
+                              setBrandSearchQuery('');
+                              setIsBrandDropdownOpen(false);
+                            }}
+                          >
+                            {brand.name}
+                          </div>
+                        ))}
+                        <div
+                          className="brand-option custom-brand-option"
+                          onClick={() => {
+                            setIsCustomBrand(true);
+                            setCustomBrand('');
+                            setIsBrandDropdownOpen(false);
+                            setBrandSearchQuery('');
+                          }}
+                        >
+                          직접 입력
+                        </div>
+                      </>
+                    ) : (
+                      <div className="brand-option no-results">
+                        검색 결과가 없습니다
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {isCustomBrand && (
+                  <input
+                    type="text"
+                    value={customBrand}
+                    onChange={(e) => setCustomBrand(e.target.value)}
+                    placeholder="브랜드명을 직접 입력하세요"
+                    disabled={loading}
+                    className="text-input"
+                    style={{ marginTop: '8px' }}
+                  />
+                )}
+              </div>
+            )}
           </div>
           <button
             onClick={handleCreateNickname}
