@@ -202,7 +202,13 @@ const AdminDashboard = () => {
     <div className="admin-dashboard">
       <header className="admin-header">
         <div className="admin-header-content">
-          <h1 className="admin-title">비즈블라 관리자</h1>
+          <h1 
+            className="admin-title" 
+            onClick={() => handleTabChange('dashboard')}
+            style={{ cursor: 'pointer' }}
+          >
+            비즈블라 관리자
+          </h1>
           <div className="admin-menu-container" ref={menuRef}>
             <button 
               className="admin-hamburger-button"
