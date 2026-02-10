@@ -1,0 +1,160 @@
+.admin-post-management-container {
+  padding: 24px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.admin-post-management-title {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 24px;
+  color: #333;
+}
+
+.admin-post-management-content {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.admin-post-management-section {
+  background: #fff;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.section-description {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.text-input,
+.number-input,
+.select-input,
+.textarea-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+  font-family: inherit;
+}
+
+.text-input:focus,
+.number-input:focus,
+.select-input:focus,
+.textarea-input:focus {
+  outline: none;
+  border-color: #ED4E39;
+}
+
+.text-input:disabled,
+.number-input:disabled,
+.select-input:disabled,
+.textarea-input:disabled {
+  background: #f5f5f5;
+  cursor: not-allowed;
+}
+
+.textarea-input {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.info-message {
+  padding: 12px;
+  background: #f5f5f5;
+  border-radius: 4px;
+  color: #666;
+  font-size: 14px;
+  text-align: center;
+}
+
+.generate-button {
+  padding: 12px 24px;
+  background: #ED4E39;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  width: 100%;
+}
+
+.generate-button:hover:not(:disabled) {
+  background: #d63a26;
+}
+
+.generate-button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.admin-post-management-message {
+  padding: 12px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  margin-top: 16px;
+}
+
+.admin-post-management-message.success {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #c8e6c9;
+}
+
+.admin-post-management-message.error {
+  background: #ffebee;
+  color: #c62828;
+  border: 1px solid #ffcdd2;
+}
+
+.loading {
+  padding: 12px;
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .admin-post-management-container {
+    padding: 16px;
+  }
+
+  .admin-post-management-section {
+    padding: 16px;
+  }
+
+  .admin-post-management-title {
+    font-size: 20px;
+  }
+
+  .section-title {
+    font-size: 18px;
+  }
+}

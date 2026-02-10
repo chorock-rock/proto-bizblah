@@ -8,6 +8,7 @@ import AdminPosts from './AdminPosts';
 import AdminNotices from './AdminNotices';
 import AdminSuggestions from './AdminSuggestions';
 import BrandUpload from './BrandUpload';
+import AdminPostManagement from './AdminPostManagement';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
@@ -29,6 +30,8 @@ const AdminDashboard = () => {
       return 'notices';
     } else if (location.pathname === '/admin/suggestions') {
       return 'suggestions';
+    } else if (location.pathname === '/admin/post-management') {
+      return 'post-management';
     }
     return 'dashboard';
   });
@@ -138,6 +141,8 @@ const AdminDashboard = () => {
       setActiveTab('suggestions');
     } else if (location.pathname === '/admin/brands') {
       setActiveTab('brands');
+    } else if (location.pathname === '/admin/post-management') {
+      setActiveTab('post-management');
     } else if (location.pathname === '/admin') {
       setActiveTab('dashboard');
     }
@@ -182,6 +187,8 @@ const AdminDashboard = () => {
       navigate('/admin/suggestions');
     } else if (tab === 'brands') {
       navigate('/admin/brands');
+    } else if (tab === 'post-management') {
+      navigate('/admin/post-management');
     } else {
       navigate('/admin');
     }
@@ -241,6 +248,12 @@ const AdminDashboard = () => {
                     onClick={() => handleTabChange('brands')}
                   >
                     브랜드 업로드
+                  </button>
+                  <button 
+                    className={`admin-menu-item ${activeTab === 'post-management' ? 'active' : ''}`}
+                    onClick={() => handleTabChange('post-management')}
+                  >
+                    게시글 종합 관리
                   </button>
                   <div className="admin-menu-divider"></div>
                   <button className="admin-menu-item admin-logout-item" onClick={handleLogout}>
@@ -312,8 +325,10 @@ const AdminDashboard = () => {
           <AdminNotices />
         ) : activeTab === 'suggestions' ? (
           <AdminSuggestions />
-        ) : (
+        ) : activeTab === 'brands' ? (
           <BrandUpload />
+        ) : (
+          <AdminPostManagement />
         )}
       </main>
     </div>

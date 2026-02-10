@@ -149,6 +149,10 @@ function AppContent() {
         element={<AdminDashboard />} 
       />
       <Route 
+        path="/admin/post-management" 
+        element={<AdminDashboard />} 
+      />
+      <Route 
         path="/admin" 
         element={<AdminDashboard />} 
       />

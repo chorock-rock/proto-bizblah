@@ -6,7 +6,7 @@ export const useAdmin = () => {
   return useContext(AdminContext);
 };
 
-const ADMIN_PASSWORD = 'abcd12345';
+const ADMIN_PASSWORD = 'abcd123457';
 
 export const AdminProvider = ({ children }) => {
   const [isAdmin, setIsAdmin] = useState(() => {
