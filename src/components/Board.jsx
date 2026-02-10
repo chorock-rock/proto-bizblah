@@ -21,7 +21,6 @@ const Board = ({ filter = 'all' }) => {
   const [animatingPosts, setAnimatingPosts] = useState({}); // { postId: true/false }
   const [commentsCounts, setCommentsCounts] = useState({}); // { postId: totalCount }
   const scrollRestoredRef = useRef(false);
-  const loadMoreRef = useRef(null);
   const POSTS_PER_PAGE = 10;
 
   // 게시글 좋아요 수 실시간 업데이트 (첫 페이지만)
@@ -305,24 +304,30 @@ const Board = ({ filter = 'all' }) => {
     return date.toLocaleDateString('ko-KR');
   };
 
-  // 무한 스크롤 감지
+  // 무한 스크롤 감지 (디바운싱 적용)
   useEffect(() => {
+    let ticking = false;
+
     const handleScroll = () => {
-      if (loadingMore || !hasMore || !lastVisible) return;
+      if (!ticking && hasMore && !loadingMore && lastVisible) {
+        window.requestAnimationFrame(() => {
+          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+          const windowHeight = window.innerHeight;
+          const documentHeight = document.documentElement.scrollHeight;
 
-      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-      const windowHeight = window.innerHeight;
-      const documentHeight = document.documentElement.scrollHeight;
-
-      // 하단 300px 전에 도달하면 로드
-      if (scrollTop + windowHeight >= documentHeight - 300) {
-        loadMorePosts();
+          // 하단 300px 전에 도달하면 로드
+          if (scrollTop + windowHeight >= documentHeight - 300) {
+            loadMorePosts();
+          }
+          ticking = false;
+        });
+        ticking = true;
       }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [loadingMore, hasMore, loadMorePosts]);
+  }, [hasMore, loadingMore, lastVisible, loadMorePosts]);
 
   // 스크롤 위치 저장 및 복원
   useEffect(() => {
