@@ -23,24 +23,34 @@ const Board = ({ filter = 'all' }) => {
   const scrollRestoredRef = useRef(false);
   const POSTS_PER_PAGE = 10;
 
-  // 게시글 좋아요 수 실시간 업데이트 (첫 페이지만)
+  // 게시글 좋아요 수 실시간 업데이트 (첫 페이지만, 스크롤 위치 유지)
   useEffect(() => {
     if (posts.length === 0) return;
 
     // 첫 10개 게시글만 실시간 구독 (성능 최적화)
     const postsToSubscribe = posts.slice(0, POSTS_PER_PAGE);
-    const postIds = postsToSubscribe.map(p => p.id);
     
     const unsubscribes = postsToSubscribe.map(post => {
       const postRef = doc(db, 'posts', post.id);
       return onSnapshot(postRef, (postDoc) => {
         if (postDoc.exists()) {
           const postData = postDoc.data();
+          // 스크롤 위치 저장
+          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+          
           setPosts(prevPosts => 
             prevPosts.map(p => 
               p.id === post.id ? { ...p, likes: postData.likes || 0 } : p
             )
           );
+          
+          // 스크롤 위치 복원 (좋아요 수만 변경되므로 높이 변화 없음)
+          requestAnimationFrame(() => {
+            window.scrollTo({
+              top: scrollTop,
+              behavior: 'instant'
+            });
+          });
         }
       });
     });
@@ -187,8 +197,35 @@ const Board = ({ filter = 'all' }) => {
         setPosts(prevPosts => {
           const exists = prevPosts.some(p => p.id === newPost.id);
           if (!exists && prevPosts.length < POSTS_PER_PAGE) {
+            // 현재 스크롤 위치 저장
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const scrollHeight = document.documentElement.scrollHeight;
+            
             // 첫 페이지에 새 게시글 추가
-            return [newPost, ...prevPosts].slice(0, POSTS_PER_PAGE);
+            const updatedPosts = [newPost, ...prevPosts].slice(0, POSTS_PER_PAGE);
+            
+            // DOM 업데이트 후 스크롤 위치 복원 (사용자가 본 위치 유지)
+            requestAnimationFrame(() => {
+              requestAnimationFrame(() => {
+                const newScrollHeight = document.documentElement.scrollHeight;
+                const heightDifference = newScrollHeight - scrollHeight;
+                // 새 게시글이 위에 추가되었으므로 높이 차이만큼 스크롤을 아래로 이동하여 같은 콘텐츠를 보도록 함
+                if (heightDifference > 0 && scrollTop > 0) {
+                  window.scrollTo({
+                    top: scrollTop + heightDifference,
+                    behavior: 'instant'
+                  });
+                } else if (scrollTop === 0) {
+                  // 맨 위에 있으면 그대로 유지
+                  window.scrollTo({
+                    top: 0,
+                    behavior: 'instant'
+                  });
+                }
+              });
+            });
+            
+            return updatedPosts;
           }
           return prevPosts;
         });
