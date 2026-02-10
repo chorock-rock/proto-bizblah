@@ -519,6 +519,30 @@ const AdminPostManagement = () => {
             선택한 게시글의 댓글에 대댓글을 생성합니다.
           </p>
           <div className="form-group">
+            <label htmlFor="replyPostSelect">게시글 선택</label>
+            {postsLoading ? (
+              <div className="loading">게시글 로딩 중...</div>
+            ) : (
+              <select
+                id="replyPostSelect"
+                value={selectedPostId}
+                onChange={(e) => {
+                  setSelectedPostId(e.target.value);
+                  setSelectedCommentId(''); // 게시글 변경 시 댓글 선택 초기화
+                }}
+                disabled={loading}
+                className="select-input"
+              >
+                <option value="">게시글을 선택하세요</option>
+                {posts.map(post => (
+                  <option key={post.id} value={post.id}>
+                    {post.title} ({post.authorName || '익명'})
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+          <div className="form-group">
             <label htmlFor="commentSelect">댓글 선택</label>
             {!selectedPostId ? (
               <div className="info-message">먼저 게시글을 선택해주세요.</div>
