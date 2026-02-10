@@ -12,6 +12,9 @@ const Comment = ({ comment, postId, currentUser }) => {
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [replyText, setReplyText] = useState('');
   const [submittingReply, setSubmittingReply] = useState(false);
+  const [replyingToReplyId, setReplyingToReplyId] = useState(null);
+  const [nestedReplyText, setNestedReplyText] = useState('');
+  const [submittingNestedReply, setSubmittingNestedReply] = useState(false);
   const [liked, setLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(comment.likes || 0);
   const [expanded, setExpanded] = useState(true);
@@ -166,6 +169,54 @@ const Comment = ({ comment, postId, currentUser }) => {
     }
   };
 
+  const handleNestedReplySubmit = async (e, replyId) => {
+    e.preventDefault();
+    if (!nestedReplyText.trim() || !currentUser || !replyId) return;
+
+    try {
+      setSubmittingNestedReply(true);
+      
+      const targetReply = replies.find(r => r.id === replyId);
+      const targetAuthorName = targetReply?.authorName || '익명';
+      
+      // 중첩된 답글을 replies 컬렉션에 저장 (replyTo 필드로 원본 대댓글 ID와 닉네임 표시)
+      const nestedReplyRef = await addDoc(collection(db, 'posts', postId, 'comments', comment.id, 'replies'), {
+        content: nestedReplyText.trim(),
+        authorId: currentUser.uid,
+        authorName: getNickname(),
+        replyTo: replyId, // 어떤 대댓글에 대한 답글인지 표시 (ID)
+        replyToName: targetAuthorName, // 원본 대댓글 작성자 닉네임
+        createdAt: serverTimestamp()
+      });
+
+      await updateDoc(doc(db, 'posts', postId, 'comments', comment.id), {
+        repliesCount: increment(1)
+      });
+
+      // 게시글의 댓글 카운트도 증가
+      await updateDoc(doc(db, 'posts', postId), {
+        commentsCount: increment(1)
+      });
+
+      // 중첩 답글 작성 이벤트 추적
+      if (analytics) {
+        logEvent(analytics, 'nested_reply_create', {
+          post_id: postId,
+          comment_id: comment.id,
+          reply_id: replyId,
+          nested_reply_id: nestedReplyRef.id
+        });
+      }
+
+      setNestedReplyText('');
+      setReplyingToReplyId(null);
+    } catch (error) {
+      console.error('중첩 답글 작성 오류:', error);
+    } finally {
+      setSubmittingNestedReply(false);
+    }
+  };
+
   const formatDate = (date) => {
     const now = new Date();
     const diff = now - date;
@@ -235,10 +286,69 @@ const Comment = ({ comment, postId, currentUser }) => {
               {replies.map((reply) => (
                 <div key={reply.id} className="reply-item">
                   <div className="reply-header">
-                    <span className="reply-author">{reply.authorName}</span>
+                    <span className="reply-author">
+                      {reply.replyTo && (
+                        <span className="reply-to-indicator">@{reply.replyToName || replies.find(r => r.id === reply.replyTo)?.authorName || '알 수 없음'}</span>
+                      )}
+                      {reply.authorName}
+                    </span>
                     <span className="reply-date">{formatDate(reply.createdAt)}</span>
                   </div>
-                  <div className="reply-content">{reply.content}</div>
+                  <div className="reply-content">
+                    {reply.content.split(/(@[^\s]+)/g).map((part, index) => {
+                      if (part.startsWith('@')) {
+                        return <span key={index} className="mention-text">{part}</span>;
+                      }
+                      return <span key={index}>{part}</span>;
+                    })}
+                  </div>
+                  {currentUser && (
+                    <div className="reply-actions">
+                      <button 
+                        className="reply-to-reply-button"
+                        onClick={() => {
+                          if (replyingToReplyId === reply.id) {
+                            setReplyingToReplyId(null);
+                            setNestedReplyText('');
+                          } else {
+                            setReplyingToReplyId(reply.id);
+                            setNestedReplyText(`@${reply.authorName || '익명'} `);
+                          }
+                        }}
+                      >
+                        답글달기
+                      </button>
+                    </div>
+                  )}
+                  {replyingToReplyId === reply.id && (
+                    <form onSubmit={(e) => handleNestedReplySubmit(e, reply.id)} className="nested-reply-form">
+                      <textarea
+                        value={nestedReplyText}
+                        onChange={(e) => setNestedReplyText(e.target.value)}
+                        placeholder={`@${reply.authorName || '익명'} 답글을 입력하세요...`}
+                        rows={2}
+                        disabled={submittingNestedReply}
+                      />
+                      <div className="reply-form-actions">
+                        <button 
+                          type="button" 
+                          className="cancel-reply-button"
+                          onClick={() => {
+                            setReplyingToReplyId(null);
+                            setNestedReplyText('');
+                          }}
+                        >
+                          취소
+                        </button>
+                        <button 
+                          type="submit" 
+                          disabled={!nestedReplyText.trim() || submittingNestedReply}
+                        >
+                          {submittingNestedReply ? '작성 중...' : '답글 작성'}
+                        </button>
+                      </div>
+                    </form>
+                  )}
                 </div>
               ))}
             </div>

@@ -290,6 +290,58 @@
   white-space: pre-wrap;
 }
 
+.reply-actions {
+  margin-top: 8px;
+}
+
+.reply-to-reply-button {
+  background: none;
+  border: none;
+  color: #ED4E39;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 4px 0;
+  font-weight: 500;
+}
+
+.reply-to-reply-button:hover {
+  text-decoration: underline;
+}
+
+.reply-to-indicator {
+  color: #4285F4;
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+.mention-text {
+  color: #4285F4;
+  font-weight: 600;
+}
+
+.nested-reply-form {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e8e8e8;
+}
+
+.nested-reply-form textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 60px;
+  margin-bottom: 8px;
+}
+
+.nested-reply-form textarea:focus {
+  outline: none;
+  border-color: #ED4E39;
+}
+
 .reply-form {
   margin-top: 12px;
   display: flex;
