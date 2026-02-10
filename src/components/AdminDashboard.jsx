@@ -296,7 +296,7 @@ const AdminDashboard = () => {
               </div>
             </div>
             <div className="admin-brand-stats-section">
-              <h2 className="chart-title">브랜드별 사용자 수</h2>
+              <h2 className="chart-title">브랜드별 사용자 수(더미 데이터 제거)</h2>
               {loading ? (
                 <div className="loading">로딩 중...</div>
               ) : (
