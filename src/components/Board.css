@@ -78,6 +78,23 @@
   border-bottom: none;
 }
 
+.load-more-container {
+  padding: 24px;
+  text-align: center;
+  border-top: 1px solid #f0f0f0;
+}
+
+.loading-indicator {
+  color: #666;
+  font-size: 14px;
+}
+
+.no-more-posts {
+  color: #999;
+  font-size: 14px;
+  font-style: italic;
+}
+
 .post-meta {
   display: flex;
   align-items: center;

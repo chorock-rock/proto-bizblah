@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { db, analytics } from '../firebase';
-import { collection, query, orderBy, onSnapshot, where, doc, getDoc, setDoc, updateDoc, increment, serverTimestamp, getDocs } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, where, doc, getDoc, setDoc, updateDoc, increment, serverTimestamp, getDocs, limit, startAfter } from 'firebase/firestore';
 import { logEvent } from 'firebase/analytics';
 import PostWrite from './PostWrite';
 import './Board.css';
@@ -13,12 +13,46 @@ const Board = ({ filter = 'all' }) => {
   const location = useLocation();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [lastVisible, setLastVisible] = useState(null);
   const [showWriteModal, setShowWriteModal] = useState(false);
   const [likedPosts, setLikedPosts] = useState({}); // { postId: true/false }
   const [animatingPosts, setAnimatingPosts] = useState({}); // { postId: true/false }
   const [commentsCounts, setCommentsCounts] = useState({}); // { postId: totalCount }
   const scrollRestoredRef = useRef(false);
+  const loadMoreRef = useRef(null);
+  const POSTS_PER_PAGE = 10;
 
+  // 게시글 좋아요 수 실시간 업데이트 (첫 페이지만)
+  useEffect(() => {
+    if (posts.length === 0) return;
+
+    // 첫 10개 게시글만 실시간 구독 (성능 최적화)
+    const postsToSubscribe = posts.slice(0, POSTS_PER_PAGE);
+    const postIds = postsToSubscribe.map(p => p.id);
+    
+    const unsubscribes = postsToSubscribe.map(post => {
+      const postRef = doc(db, 'posts', post.id);
+      return onSnapshot(postRef, (postDoc) => {
+        if (postDoc.exists()) {
+          const postData = postDoc.data();
+          setPosts(prevPosts => 
+            prevPosts.map(p => 
+              p.id === post.id ? { ...p, likes: postData.likes || 0 } : p
+            )
+          );
+        }
+      });
+    });
+
+    return () => {
+      unsubscribes.forEach(unsubscribe => unsubscribe());
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [posts.length, posts.slice(0, POSTS_PER_PAGE).map(p => p.id).join(',')]);
+
+  // 초기 게시글 로드 (첫 10개)
   useEffect(() => {
     if (!currentUser && filter === 'my') {
       setPosts([]);
@@ -26,36 +60,211 @@ const Board = ({ filter = 'all' }) => {
       return;
     }
 
-    // 게시글 실시간 구독
+    const loadInitialPosts = async () => {
+      try {
+        setLoading(true);
+        setHasMore(true);
+        setLastVisible(null);
+
+        // 게시글 쿼리 생성
+        let postsQuery;
+        if (filter === 'my' && currentUser) {
+          postsQuery = query(
+            collection(db, 'posts'),
+            where('authorId', '==', currentUser.uid),
+            orderBy('createdAt', 'desc'),
+            limit(POSTS_PER_PAGE)
+          );
+        } else {
+          postsQuery = query(
+            collection(db, 'posts'),
+            orderBy('createdAt', 'desc'),
+            limit(POSTS_PER_PAGE)
+          );
+        }
+
+        const snapshot = await getDocs(postsQuery);
+        const postsData = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          createdAt: doc.data().createdAt?.toDate() || new Date()
+        }));
+
+        setPosts(postsData);
+        
+        // 마지막 문서 저장 (다음 페이지용)
+        if (snapshot.docs.length > 0) {
+          setLastVisible(snapshot.docs[snapshot.docs.length - 1]);
+          setHasMore(snapshot.docs.length === POSTS_PER_PAGE);
+        } else {
+          setHasMore(false);
+        }
+
+        // 각 게시글의 좋아요 상태 확인
+        if (currentUser) {
+          const likedStatus = {};
+          await Promise.all(
+            postsData.map(async (post) => {
+              try {
+                const likeDoc = await getDoc(doc(db, 'posts', post.id, 'likes', currentUser.uid));
+                likedStatus[post.id] = likeDoc.exists() && likeDoc.data().deleted !== true;
+              } catch (error) {
+                console.error(`게시글 ${post.id} 좋아요 상태 확인 오류:`, error);
+                likedStatus[post.id] = false;
+              }
+            })
+          );
+          setLikedPosts(likedStatus);
+        } else {
+          setLikedPosts({});
+        }
+
+        // 댓글 수는 commentsCount 필드 사용 (최적화)
+        const counts = {};
+        postsData.forEach(post => {
+          counts[post.id] = post.commentsCount || 0;
+        });
+        setCommentsCounts(counts);
+        
+        setLoading(false);
+      } catch (error) {
+        console.error('게시글 로드 오류:', error);
+        if (error.code === 'failed-precondition') {
+          const errorMessage = error.message || '';
+          const indexUrlMatch = errorMessage.match(/https:\/\/console\.firebase\.google\.com[^\s]+/);
+          
+          if (indexUrlMatch) {
+            const indexUrl = indexUrlMatch[0];
+            const shouldCreate = window.confirm(
+              'Firestore 인덱스가 필요합니다.\n\n' +
+              '인덱스를 생성하시겠습니까? (새 창이 열립니다)\n\n' +
+              '또는 수동으로 Firebase Console > Firestore Database > Indexes에서 생성할 수 있습니다.'
+            );
+            
+            if (shouldCreate) {
+              window.open(indexUrl, '_blank');
+            }
+          }
+        }
+        setLoading(false);
+      }
+    };
+
+    loadInitialPosts();
+  }, [filter, currentUser]);
+
+  // 새 게시글 실시간 구독 (첫 페이지에만 추가)
+  useEffect(() => {
+    if (!currentUser && filter === 'my') {
+      return;
+    }
+
     let postsQuery;
     if (filter === 'my' && currentUser) {
-      // 내가 쓴 글만 필터링
       postsQuery = query(
         collection(db, 'posts'),
         where('authorId', '==', currentUser.uid),
-        orderBy('createdAt', 'desc')
+        orderBy('createdAt', 'desc'),
+        limit(1)
       );
     } else {
-      // 전체 게시글 조회 (브랜드 필터링 제거)
       postsQuery = query(
         collection(db, 'posts'),
-        orderBy('createdAt', 'desc')
+        orderBy('createdAt', 'desc'),
+        limit(1)
       );
     }
 
     const unsubscribe = onSnapshot(postsQuery, async (snapshot) => {
-      const postsData = snapshot.docs.map(doc => ({
+      if (snapshot.docs.length > 0) {
+        const newPostDoc = snapshot.docs[0];
+        const newPost = {
+          id: newPostDoc.id,
+          ...newPostDoc.data(),
+          createdAt: newPostDoc.data().createdAt?.toDate() || new Date()
+        };
+
+        // 이미 존재하는 게시글이면 무시
+        setPosts(prevPosts => {
+          const exists = prevPosts.some(p => p.id === newPost.id);
+          if (!exists && prevPosts.length < POSTS_PER_PAGE) {
+            // 첫 페이지에 새 게시글 추가
+            return [newPost, ...prevPosts].slice(0, POSTS_PER_PAGE);
+          }
+          return prevPosts;
+        });
+
+        // 좋아요 상태 확인
+        if (currentUser) {
+          try {
+            const likeDoc = await getDoc(doc(db, 'posts', newPost.id, 'likes', currentUser.uid));
+            setLikedPosts(prev => ({
+              ...prev,
+              [newPost.id]: likeDoc.exists() && likeDoc.data().deleted !== true
+            }));
+          } catch (error) {
+            console.error('좋아요 상태 확인 오류:', error);
+          }
+        }
+
+        // 댓글 수 설정
+        setCommentsCounts(prev => ({
+          ...prev,
+          [newPost.id]: newPost.commentsCount || 0
+        }));
+      }
+    });
+
+    return () => unsubscribe();
+  }, [filter, currentUser]);
+
+  // 더보기 핸들러 (useCallback으로 메모이제이션)
+  const loadMorePosts = useCallback(async () => {
+    if (!hasMore || loadingMore || !lastVisible) return;
+
+    try {
+      setLoadingMore(true);
+
+      let postsQuery;
+      if (filter === 'my' && currentUser) {
+        postsQuery = query(
+          collection(db, 'posts'),
+          where('authorId', '==', currentUser.uid),
+          orderBy('createdAt', 'desc'),
+          startAfter(lastVisible),
+          limit(POSTS_PER_PAGE)
+        );
+      } else {
+        postsQuery = query(
+          collection(db, 'posts'),
+          orderBy('createdAt', 'desc'),
+          startAfter(lastVisible),
+          limit(POSTS_PER_PAGE)
+        );
+      }
+
+      const snapshot = await getDocs(postsQuery);
+      const newPosts = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
         createdAt: doc.data().createdAt?.toDate() || new Date()
       }));
-      setPosts(postsData);
+
+      setPosts(prev => [...prev, ...newPosts]);
       
-      // 각 게시글의 좋아요 상태 확인
+      // 마지막 문서 업데이트
+      if (snapshot.docs.length > 0) {
+        setLastVisible(snapshot.docs[snapshot.docs.length - 1]);
+        setHasMore(snapshot.docs.length === POSTS_PER_PAGE);
+      } else {
+        setHasMore(false);
+      }
+
+      // 좋아요 상태 확인
       if (currentUser) {
         const likedStatus = {};
         await Promise.all(
-          postsData.map(async (post) => {
+          newPosts.map(async (post) => {
             try {
               const likeDoc = await getDoc(doc(db, 'posts', post.id, 'likes', currentUser.uid));
               likedStatus[post.id] = likeDoc.exists() && likeDoc.data().deleted !== true;
@@ -65,78 +274,22 @@ const Board = ({ filter = 'all' }) => {
             }
           })
         );
-        setLikedPosts(likedStatus);
-      } else {
-        setLikedPosts({});
+        setLikedPosts(prev => ({ ...prev, ...likedStatus }));
       }
 
-      // 각 게시글의 댓글과 대댓글 수 계산
+      // 댓글 수 설정
       const counts = {};
-      await Promise.all(
-        postsData.map(async (post) => {
-          try {
-            // 댓글 가져오기
-            const commentsQuery = query(
-              collection(db, 'posts', post.id, 'comments'),
-              orderBy('createdAt', 'asc')
-            );
-            const commentsSnapshot = await getDocs(commentsQuery);
-            let totalCount = commentsSnapshot.size; // 댓글 수
+      newPosts.forEach(post => {
+        counts[post.id] = post.commentsCount || 0;
+      });
+      setCommentsCounts(prev => ({ ...prev, ...counts }));
 
-            // 각 댓글의 대댓글 수 추가
-            await Promise.all(
-              commentsSnapshot.docs.map(async (commentDoc) => {
-                const repliesQuery = query(
-                  collection(db, 'posts', post.id, 'comments', commentDoc.id, 'replies')
-                );
-                const repliesSnapshot = await getDocs(repliesQuery);
-                totalCount += repliesSnapshot.size; // 대댓글 수 추가
-              })
-            );
-
-            counts[post.id] = totalCount;
-          } catch (error) {
-            console.error(`게시글 ${post.id} 댓글 수 계산 오류:`, error);
-            // 오류 발생 시 기존 commentsCount 사용
-            counts[post.id] = post.commentsCount || 0;
-          }
-        })
-      );
-      setCommentsCounts(counts);
-      
-      setLoading(false);
-    }, (error) => {
-      console.error('게시글 구독 오류:', error);
-      // 인덱스 오류인 경우 사용자에게 안내
-      if (error.code === 'failed-precondition') {
-        const errorMessage = error.message || '';
-        const indexUrlMatch = errorMessage.match(/https:\/\/console\.firebase\.google\.com[^\s]+/);
-        
-        if (indexUrlMatch) {
-          const indexUrl = indexUrlMatch[0];
-          const shouldCreate = window.confirm(
-            'Firestore 인덱스가 필요합니다.\n\n' +
-            '인덱스를 생성하시겠습니까? (새 창이 열립니다)\n\n' +
-            '또는 수동으로 Firebase Console > Firestore Database > Indexes에서 생성할 수 있습니다.'
-          );
-          
-          if (shouldCreate) {
-            window.open(indexUrl, '_blank');
-          }
-        } else {
-          alert(
-            'Firestore 인덱스가 필요합니다.\n\n' +
-            'Firebase Console > Firestore Database > Indexes에서 다음 인덱스를 생성해주세요:\n\n' +
-            'Collection: posts\n' +
-            'Fields: createdAt (Descending)'
-          );
-        }
-      }
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, [filter, currentUser]);
+      setLoadingMore(false);
+    } catch (error) {
+      console.error('더보기 로드 오류:', error);
+      setLoadingMore(false);
+    }
+  }, [hasMore, loadingMore, lastVisible, filter, currentUser]);
 
   const formatDate = (date) => {
     const now = new Date();
@@ -151,6 +304,25 @@ const Board = ({ filter = 'all' }) => {
     if (days < 7) return `${days}일 전`;
     return date.toLocaleDateString('ko-KR');
   };
+
+  // 무한 스크롤 감지
+  useEffect(() => {
+    const handleScroll = () => {
+      if (loadingMore || !hasMore || !lastVisible) return;
+
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+
+      // 하단 300px 전에 도달하면 로드
+      if (scrollTop + windowHeight >= documentHeight - 300) {
+        loadMorePosts();
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [loadingMore, hasMore, loadMorePosts]);
 
   // 스크롤 위치 저장 및 복원
   useEffect(() => {
@@ -198,6 +370,12 @@ const Board = ({ filter = 'all' }) => {
         });
         setLikedPosts(prev => ({ ...prev, [postId]: false }));
         setAnimatingPosts(prev => ({ ...prev, [postId]: false }));
+        // 게시글 좋아요 수 업데이트
+        setPosts(prevPosts => 
+          prevPosts.map(p => 
+            p.id === postId ? { ...p, likes: Math.max(0, (p.likes || 0) - 1) } : p
+          )
+        );
         
         // 좋아요 취소 이벤트 추적
         if (analytics) {
@@ -218,6 +396,12 @@ const Board = ({ filter = 'all' }) => {
         });
         setLikedPosts(prev => ({ ...prev, [postId]: true }));
         setAnimatingPosts(prev => ({ ...prev, [postId]: true }));
+        // 게시글 좋아요 수 업데이트
+        setPosts(prevPosts => 
+          prevPosts.map(p => 
+            p.id === postId ? { ...p, likes: (p.likes || 0) + 1 } : p
+          )
+        );
         
         // 애니메이션 종료
         setTimeout(() => {
@@ -310,6 +494,16 @@ const Board = ({ filter = 'all' }) => {
                   </div>
                 </div>
               ))}
+              {loadingMore && (
+                <div className="load-more-container">
+                  <div className="loading-indicator">로딩 중...</div>
+                </div>
+              )}
+              {!hasMore && posts.length > 0 && (
+                <div className="load-more-container">
+                  <div className="no-more-posts">모든 게시글을 불러왔습니다.</div>
+                </div>
+              )}
             </div>
           )}
         </div>

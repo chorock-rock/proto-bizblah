@@ -346,7 +346,7 @@ const BrandReview = () => {
             {renderStars(averages.overall || 0)}
           </div>
           <div className="review-count">
-            총 {reviews.length}명이 평가했습니다
+            총 {reviews.length}명이 평가했습니다.
           </div>
         </div>
 
