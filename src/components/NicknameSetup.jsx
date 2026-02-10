@@ -5,7 +5,7 @@ import { doc, setDoc, getDoc } from 'firebase/firestore';
 import './NicknameSetup.css';
 
 const NicknameSetup = ({ onComplete }) => {
-  const { currentUser, getBrandLabel } = useAuth();
+  const { currentUser, selectedBrand } = useAuth();
   const [nickname, setNickname] = useState('');
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
@@ -110,10 +110,23 @@ const NicknameSetup = ({ onComplete }) => {
         return;
       }
 
+      // 브랜드 이름 가져오기
+      let brandName = '점주';
+      if (selectedBrand) {
+        try {
+          const brandDoc = await getDoc(doc(db, 'brands', selectedBrand));
+          if (brandDoc.exists()) {
+            brandName = brandDoc.data().name;
+          }
+        } catch (error) {
+          console.error('브랜드 정보 가져오기 오류:', error);
+        }
+      }
+
       // 사용자 프로필 저장
       await setDoc(doc(db, 'users', currentUser.uid), {
         nickname: nickname.trim(),
-        brand: getBrandLabel(),
+        brand: brandName,
         createdAt: new Date(),
         updatedAt: new Date()
       }, { merge: true });

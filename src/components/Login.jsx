@@ -5,7 +5,7 @@ import { logEvent } from 'firebase/analytics';
 import './Login.css';
 
 const Login = () => {
-  const { signInWithGoogle, selectedBrand, getBrandLabel, selectBrand } = useAuth();
+  const { signInWithGoogle, selectedBrand, getBrandLabel, selectBrand, currentUser } = useAuth();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -56,7 +56,7 @@ const Login = () => {
             익명 커뮤니티를 시작해보세요.
           </p>
           
-          {selectedBrand && (
+          {selectedBrand && currentUser && (
             <button 
               className="reselect-brand-button"
               onClick={handleReselectBrand}

@@ -6,20 +6,7 @@ import {
   deleteUser
 } from 'firebase/auth';
 import { auth, googleProvider, db } from '../firebase';
-import { doc, getDoc, deleteDoc } from 'firebase/firestore';
-
-const BRAND_LABELS = {
-  megamgccoffee: '메가엠지씨커피',
-  composecoffee: '컴포즈커피',
-  ediya: '이디야커피',
-  starbucks: '스타벅스',
-  paik: '빽다방',
-  twosome: '투썸플레이스',
-  theventi: '더벤티',
-  tenpercent: '텐퍼센트스페셜티커피',
-  mammothcoffee: '매머드커피',
-  mammothexpress: '매머드익스프레스'
-};
+import { doc, getDoc, deleteDoc, collection, query, where, getDocs } from 'firebase/firestore';
 
 const AuthContext = createContext({});
 
@@ -111,16 +98,16 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // 브랜드 이름 가져오기
+  // 브랜드 이름 가져오기 (userProfile 우선 사용)
   const getBrandLabel = () => {
-    if (!selectedBrand) return '점주';
-    
-    // 커스텀 브랜드 처리 (custom:브랜드명 형식)
-    if (selectedBrand.startsWith('custom:')) {
-      return selectedBrand.replace('custom:', '');
+    // userProfile에 브랜드가 있으면 우선 사용
+    if (userProfile?.brand) {
+      return userProfile.brand;
     }
     
-    return BRAND_LABELS[selectedBrand] || '점주';
+    // userProfile이 없거나 브랜드가 없으면 '점주' 반환
+    // (selectedBrand는 브랜드 ID이므로 직접 사용 불가)
+    return '점주';
   };
 
   // 사용자 프로필 가져오기
@@ -144,19 +131,29 @@ export const AuthProvider = ({ children }) => {
         
         // 프로필에 브랜드가 있으면 사용 (로그인 후 브랜드 고정)
         if (profileData.brand) {
-          // 브랜드 값을 역으로 찾기
-          const brandKey = Object.keys(BRAND_LABELS).find(
-            key => BRAND_LABELS[key] === profileData.brand
-          );
-          if (brandKey) {
-            setSelectedBrand(brandKey);
-            // 로컬 스토리지에도 저장하여 다음 접속 시 브랜드 선택 화면 건너뛰기
-            localStorage.setItem('selectedBrand', brandKey);
-          } else {
-            // BRAND_LABELS에 없으면 커스텀 브랜드로 처리
-            const customBrandValue = `custom:${profileData.brand}`;
-            setSelectedBrand(customBrandValue);
-            localStorage.setItem('selectedBrand', customBrandValue);
+          // 브랜드 이름으로 브랜드 ID 찾기
+          try {
+            const brandNameLower = profileData.brand.toLowerCase();
+            const brandsQuery = query(
+              collection(db, 'brands'),
+              where('nameLower', '==', brandNameLower),
+              where('isActive', '==', true)
+            );
+            const brandsSnapshot = await getDocs(brandsQuery);
+            
+            if (!brandsSnapshot.empty) {
+              const brandId = brandsSnapshot.docs[0].id;
+              setSelectedBrand(brandId);
+              localStorage.setItem('selectedBrand', brandId);
+            } else {
+              // 브랜드를 찾을 수 없으면 null로 설정
+              setSelectedBrand(null);
+              localStorage.removeItem('selectedBrand');
+            }
+          } catch (error) {
+            console.error('브랜드 ID 찾기 오류:', error);
+            setSelectedBrand(null);
+            localStorage.removeItem('selectedBrand');
           }
         } else {
           // 프로필에 브랜드가 없으면 로그인 전에 선택한 브랜드 유지

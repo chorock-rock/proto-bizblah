@@ -7,6 +7,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import AdminPosts from './AdminPosts';
 import AdminNotices from './AdminNotices';
 import AdminSuggestions from './AdminSuggestions';
+import BrandUpload from './BrandUpload';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
@@ -135,6 +136,8 @@ const AdminDashboard = () => {
       setActiveTab('notices');
     } else if (location.pathname === '/admin/suggestions') {
       setActiveTab('suggestions');
+    } else if (location.pathname === '/admin/brands') {
+      setActiveTab('brands');
     } else if (location.pathname === '/admin') {
       setActiveTab('dashboard');
     }
@@ -177,6 +180,8 @@ const AdminDashboard = () => {
       navigate('/admin/notices');
     } else if (tab === 'suggestions') {
       navigate('/admin/suggestions');
+    } else if (tab === 'brands') {
+      navigate('/admin/brands');
     } else {
       navigate('/admin');
     }
@@ -230,6 +235,12 @@ const AdminDashboard = () => {
                     onClick={() => handleTabChange('suggestions')}
                   >
                     건의 관리
+                  </button>
+                  <button 
+                    className={`admin-menu-item ${activeTab === 'brands' ? 'active' : ''}`}
+                    onClick={() => handleTabChange('brands')}
+                  >
+                    브랜드 업로드
                   </button>
                   <div className="admin-menu-divider"></div>
                   <button className="admin-menu-item admin-logout-item" onClick={handleLogout}>
@@ -299,8 +310,10 @@ const AdminDashboard = () => {
           <AdminPosts />
         ) : activeTab === 'notices' ? (
           <AdminNotices />
-        ) : (
+        ) : activeTab === 'suggestions' ? (
           <AdminSuggestions />
+        ) : (
+          <BrandUpload />
         )}
       </main>
     </div>

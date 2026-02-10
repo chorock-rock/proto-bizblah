@@ -1,40 +1,143 @@
 import { useState, useRef, useEffect } from 'react';
+import { db } from '../firebase';
+import { collection, query, where, orderBy, limit, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
 import logo from '../assets/logo.svg';
 import './BrandSelection.css';
 
-const BRANDS = [
-  { value: 'megamgccoffee', label: '메가엠지씨커피' },
-  { value: 'composecoffee', label: '컴포즈커피' },
-  { value: 'ediya', label: '이디야커피' },
-  { value: 'starbucks', label: '스타벅스' },
-  { value: 'paik', label: '빽다방' },
-  { value: 'twosome', label: '투썸플레이스' },
-  { value: 'theventi', label: '더벤티' },
-  { value: 'tenpercent', label: '텐퍼센트스페셜티커피' },
-  { value: 'mammothcoffee', label: '매머드커피' },
-  { value: 'mammothexpress', label: '매머드익스프레스' }
-];
-
 const BrandSelection = ({ onSelect }) => {
   const [selectedBrand, setSelectedBrand] = useState('');
+  const [selectedBrandLabel, setSelectedBrandLabel] = useState('');
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [customBrand, setCustomBrand] = useState('');
   const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [topBrands, setTopBrands] = useState([]);
+  const [searchResults, setSearchResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
   const dropdownRef = useRef(null);
   const inputRef = useRef(null);
 
-  const handleSubmit = (e) => {
+  // 초기 상위 10개 브랜드 로드
+  useEffect(() => {
+    const loadTopBrands = async () => {
+      try {
+        setLoading(true);
+        const brandsQuery = query(
+          collection(db, 'brands'),
+          where('isActive', '==', true),
+          orderBy('storeCount', 'desc'),
+          limit(10)
+        );
+        const snapshot = await getDocs(brandsQuery);
+        const brands = snapshot.docs.map(doc => ({
+          id: doc.id,
+          value: doc.id,
+          label: doc.data().name,
+          storeCount: doc.data().storeCount || 0
+        }));
+        setTopBrands(brands);
+      } catch (error) {
+        console.error('브랜드 로드 오류:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadTopBrands();
+  }, []);
+
+  // 검색어 변경 시 Firestore에서 검색
+  useEffect(() => {
+    const searchBrands = async () => {
+      if (!searchQuery.trim()) {
+        setSearchResults([]);
+        return;
+      }
+
+      try {
+        setSearchLoading(true);
+        const searchLower = searchQuery.toLowerCase().trim();
+        const brandsQuery = query(
+          collection(db, 'brands'),
+          where('isActive', '==', true),
+          where('nameLower', '>=', searchLower),
+          where('nameLower', '<=', searchLower + '\uf8ff'),
+          orderBy('nameLower'),
+          limit(20)
+        );
+        const snapshot = await getDocs(brandsQuery);
+        const brands = snapshot.docs.map(doc => ({
+          id: doc.id,
+          value: doc.id,
+          label: doc.data().name,
+          storeCount: doc.data().storeCount || 0
+        }));
+        setSearchResults(brands);
+      } catch (error) {
+        console.error('브랜드 검색 오류:', error);
+        setSearchResults([]);
+      } finally {
+        setSearchLoading(false);
+      }
+    };
+
+    const debounceTimer = setTimeout(() => {
+      searchBrands();
+    }, 300);
+
+    return () => clearTimeout(debounceTimer);
+  }, [searchQuery]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!selectedBrand && !customBrand) {
       setError('브랜드를 선택하거나 입력해주세요.');
       return;
     }
     setError('');
-    // 커스텀 브랜드가 입력된 경우
+    
+    // 커스텀 브랜드가 입력된 경우 Firestore에 추가
     if (customBrand.trim()) {
-      onSelect(`custom:${customBrand.trim()}`);
+      try {
+        const customBrandName = customBrand.trim();
+        const customBrandLower = customBrandName.toLowerCase();
+        
+        // 중복 체크
+        const checkQuery = query(
+          collection(db, 'brands'),
+          where('nameLower', '==', customBrandLower)
+        );
+        const existingDocs = await getDocs(checkQuery);
+        
+        let brandId;
+        if (!existingDocs.empty) {
+          // 이미 존재하는 경우 기존 ID 사용
+          brandId = existingDocs.docs[0].id;
+        } else {
+          // 새로 추가
+          const brandData = {
+            name: customBrandName,
+            nameLower: customBrandLower,
+            category: '',
+            storeCount: 0,
+            expectedCost: '',
+            note: '',
+            isCustom: true,
+            isActive: true,
+            createdAt: serverTimestamp(),
+            usageCount: 0
+          };
+          const docRef = await addDoc(collection(db, 'brands'), brandData);
+          brandId = docRef.id;
+        }
+        
+        onSelect(brandId);
+      } catch (error) {
+        console.error('커스텀 브랜드 추가 오류:', error);
+        setError('브랜드 추가 중 오류가 발생했습니다.');
+      }
     } else {
       onSelect(selectedBrand);
     }
@@ -62,16 +165,12 @@ const BrandSelection = ({ onSelect }) => {
     };
   }, [isDropdownOpen]);
 
-  // 필터링된 브랜드 목록
-  const filteredBrands = BRANDS.filter(brand =>
-    brand.label.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // 표시할 브랜드 목록 (검색어가 있으면 검색 결과, 없으면 상위 10개)
+  const displayBrands = searchQuery.trim() ? searchResults : topBrands;
 
-  // 선택된 브랜드 라벨 가져오기
-  const selectedBrandLabel = BRANDS.find(b => b.value === selectedBrand)?.label || '';
-
-  const handleBrandSelect = (brandValue) => {
-    setSelectedBrand(brandValue);
+  const handleBrandSelect = (brandId, brandLabel) => {
+    setSelectedBrand(brandId);
+    setSelectedBrandLabel(brandLabel);
     setSearchQuery('');
     setIsDropdownOpen(false);
     setShowCustomInput(false);
@@ -154,19 +253,23 @@ const BrandSelection = ({ onSelect }) => {
               
               {isDropdownOpen && !showCustomInput && (
                 <div className="brand-dropdown">
-                  {filteredBrands.length > 0 ? (
-                    filteredBrands.map((brand) => (
+                  {loading || searchLoading ? (
+                    <div className="brand-option no-results">
+                      로딩 중...
+                    </div>
+                  ) : displayBrands.length > 0 ? (
+                    displayBrands.map((brand) => (
                       <div
-                        key={brand.value}
-                        className={`brand-option ${selectedBrand === brand.value ? 'selected' : ''}`}
-                        onClick={() => handleBrandSelect(brand.value)}
+                        key={brand.id}
+                        className={`brand-option ${selectedBrand === brand.id ? 'selected' : ''}`}
+                        onClick={() => handleBrandSelect(brand.id, brand.label)}
                       >
                         {brand.label}
                       </div>
                     ))
                   ) : (
                     <div className="brand-option no-results">
-                      검색 결과가 없습니다
+                      {searchQuery.trim() ? '검색 결과가 없습니다' : '브랜드가 없습니다'}
                     </div>
                   )}
                 </div>
