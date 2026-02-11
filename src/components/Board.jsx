@@ -51,12 +51,18 @@ const Board = ({ filter = 'all' }) => {
         if (postDoc.exists()) {
           const postData = postDoc.data();
           
-          // 좋아요 수만 업데이트 (높이 변화 없으므로 스크롤 복원 불필요)
+          // 좋아요 수와 댓글 수 업데이트 (높이 변화 없으므로 스크롤 복원 불필요)
           setPosts(prevPosts => 
             prevPosts.map(p => 
               p.id === post.id ? { ...p, likes: postData.likes || 0 } : p
             )
           );
+          
+          // 댓글 수 업데이트 (대댓글 포함)
+          setCommentsCounts(prev => ({
+            ...prev,
+            [post.id]: postData.commentsCount || 0
+          }));
         }
       });
     });
@@ -168,11 +174,36 @@ const Board = ({ filter = 'all' }) => {
           setLikedPosts({});
         }
 
-        // 댓글 수는 commentsCount 필드 사용 (최적화)
+        // 댓글 수 계산 (실제 댓글 + 대댓글 모두 포함)
         const counts = {};
-        postsData.forEach(post => {
-          counts[post.id] = post.commentsCount || 0;
-        });
+        await Promise.all(
+          postsData.map(async (post) => {
+            try {
+              // 댓글 가져오기
+              const commentsSnapshot = await getDocs(
+                collection(db, 'posts', post.id, 'comments')
+              );
+              
+              let totalCount = 0;
+              // 각 댓글의 대댓글 수 계산
+              await Promise.all(
+                commentsSnapshot.docs.map(async (commentDoc) => {
+                  const repliesSnapshot = await getDocs(
+                    collection(db, 'posts', post.id, 'comments', commentDoc.id, 'replies')
+                  );
+                  totalCount += repliesSnapshot.docs.length;
+                })
+              );
+              
+              // 댓글 수 + 대댓글 수
+              counts[post.id] = commentsSnapshot.docs.length + totalCount;
+            } catch (error) {
+              console.error(`게시글 ${post.id} 댓글 수 계산 오류:`, error);
+              // 오류 발생 시 commentsCount 필드 사용
+              counts[post.id] = post.commentsCount || 0;
+            }
+          })
+        );
         setCommentsCounts(counts);
         
         setLoading(false);
@@ -365,11 +396,36 @@ const Board = ({ filter = 'all' }) => {
           return true;
         });
 
-      // 댓글 수 설정
+      // 댓글 수 계산 (실제 댓글 + 대댓글 모두 포함)
       const counts = {};
-      newPosts.forEach(post => {
-        counts[post.id] = post.commentsCount || 0;
-      });
+      await Promise.all(
+        newPosts.map(async (post) => {
+          try {
+            // 댓글 가져오기
+            const commentsSnapshot = await getDocs(
+              collection(db, 'posts', post.id, 'comments')
+            );
+            
+            let totalCount = 0;
+            // 각 댓글의 대댓글 수 계산
+            await Promise.all(
+              commentsSnapshot.docs.map(async (commentDoc) => {
+                const repliesSnapshot = await getDocs(
+                  collection(db, 'posts', post.id, 'comments', commentDoc.id, 'replies')
+                );
+                totalCount += repliesSnapshot.docs.length;
+              })
+            );
+            
+            // 댓글 수 + 대댓글 수
+            counts[post.id] = commentsSnapshot.docs.length + totalCount;
+          } catch (error) {
+            console.error(`게시글 ${post.id} 댓글 수 계산 오류:`, error);
+            // 오류 발생 시 commentsCount 필드 사용
+            counts[post.id] = post.commentsCount || 0;
+          }
+        })
+      );
 
       // 모든 상태를 한 번에 업데이트 (배치 업데이트)
       setPosts(prev => [...prev, ...newPosts]);
