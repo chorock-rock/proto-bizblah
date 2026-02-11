@@ -486,10 +486,10 @@
 }
 
 .comments-title {
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--color-text-primary);
-  margin: 0 0 20px 0;
+  margin: 0 0 8px 0;
 }
 
 .comments-list {
@@ -685,7 +685,7 @@
   }
   
   .comments-title {
-    font-size: 16px;
+    font-size: 12px;
   }
   
   .comment-form textarea {
@@ -764,6 +764,7 @@
   .post-detail-title-wrapper {
     gap: 6px;
     flex-wrap: wrap;
+    margin-bottom: 8px;
   }
   
   .post-owner-actions {
@@ -789,7 +790,7 @@
   .post-detail-meta {
     font-size: 12px;
     gap: 6px;
-    margin-bottom: 12px;
+    margin-bottom: 4px;
     flex-wrap: wrap;
   }
   
@@ -818,7 +819,7 @@
   .post-detail-body {
     font-size: 14px;
     line-height: 1.7;
-    max-height: 100px;
+    max-height: 200px;
     margin-bottom: 16px;
   }
   
@@ -843,7 +844,7 @@
   }
   
   .post-detail-content {
-    padding-top: 12px;
+    padding-top: 0px;
     padding-bottom: 0px;
   }
 }

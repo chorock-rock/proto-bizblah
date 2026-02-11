@@ -23,7 +23,7 @@ const Board = ({ filter = 'all' }) => {
   const scrollRestoredRef = useRef(false);
   const POSTS_PER_PAGE = 10;
 
-  // 게시글 좋아요 수 실시간 업데이트 (첫 페이지만, 스크롤 위치 유지)
+  // 게시글 좋아요 수 실시간 업데이트 (첫 페이지만)
   useEffect(() => {
     if (posts.length === 0) return;
 
@@ -35,22 +35,13 @@ const Board = ({ filter = 'all' }) => {
       return onSnapshot(postRef, (postDoc) => {
         if (postDoc.exists()) {
           const postData = postDoc.data();
-          // 스크롤 위치 저장
-          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
           
+          // 좋아요 수만 업데이트 (높이 변화 없으므로 스크롤 복원 불필요)
           setPosts(prevPosts => 
             prevPosts.map(p => 
               p.id === post.id ? { ...p, likes: postData.likes || 0 } : p
             )
           );
-          
-          // 스크롤 위치 복원 (좋아요 수만 변경되므로 높이 변화 없음)
-          requestAnimationFrame(() => {
-            window.scrollTo({
-              top: scrollTop,
-              behavior: 'instant'
-            });
-          });
         }
       });
     });
@@ -197,35 +188,8 @@ const Board = ({ filter = 'all' }) => {
         setPosts(prevPosts => {
           const exists = prevPosts.some(p => p.id === newPost.id);
           if (!exists && prevPosts.length < POSTS_PER_PAGE) {
-            // 현재 스크롤 위치 저장
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            const scrollHeight = document.documentElement.scrollHeight;
-            
             // 첫 페이지에 새 게시글 추가
-            const updatedPosts = [newPost, ...prevPosts].slice(0, POSTS_PER_PAGE);
-            
-            // DOM 업데이트 후 스크롤 위치 복원 (사용자가 본 위치 유지)
-            requestAnimationFrame(() => {
-              requestAnimationFrame(() => {
-                const newScrollHeight = document.documentElement.scrollHeight;
-                const heightDifference = newScrollHeight - scrollHeight;
-                // 새 게시글이 위에 추가되었으므로 높이 차이만큼 스크롤을 아래로 이동하여 같은 콘텐츠를 보도록 함
-                if (heightDifference > 0 && scrollTop > 0) {
-                  window.scrollTo({
-                    top: scrollTop + heightDifference,
-                    behavior: 'instant'
-                  });
-                } else if (scrollTop === 0) {
-                  // 맨 위에 있으면 그대로 유지
-                  window.scrollTo({
-                    top: 0,
-                    behavior: 'instant'
-                  });
-                }
-              });
-            });
-            
-            return updatedPosts;
+            return [newPost, ...prevPosts].slice(0, POSTS_PER_PAGE);
           }
           return prevPosts;
         });
@@ -254,11 +218,15 @@ const Board = ({ filter = 'all' }) => {
     return () => unsubscribe();
   }, [filter, currentUser]);
 
+
   // 더보기 핸들러 (useCallback으로 메모이제이션)
   const loadMorePosts = useCallback(async () => {
     if (!hasMore || loadingMore || !lastVisible) return;
 
     try {
+      // 스크롤 위치 저장 (함수 시작 시점)
+      const scrollTopStart = window.pageYOffset || document.documentElement.scrollTop;
+
       setLoadingMore(true);
 
       let postsQuery;
@@ -286,7 +254,15 @@ const Board = ({ filter = 'all' }) => {
         createdAt: doc.data().createdAt?.toDate() || new Date()
       }));
 
+      // 댓글 수 설정
+      const counts = {};
+      newPosts.forEach(post => {
+        counts[post.id] = post.commentsCount || 0;
+      });
+
+      // 모든 상태를 한 번에 업데이트 (배치 업데이트)
       setPosts(prev => [...prev, ...newPosts]);
+      setCommentsCounts(prev => ({ ...prev, ...counts }));
       
       // 마지막 문서 업데이트
       if (snapshot.docs.length > 0) {
@@ -296,31 +272,21 @@ const Board = ({ filter = 'all' }) => {
         setHasMore(false);
       }
 
-      // 좋아요 상태 확인
-      if (currentUser) {
-        const likedStatus = {};
-        await Promise.all(
-          newPosts.map(async (post) => {
-            try {
-              const likeDoc = await getDoc(doc(db, 'posts', post.id, 'likes', currentUser.uid));
-              likedStatus[post.id] = likeDoc.exists() && likeDoc.data().deleted !== true;
-            } catch (error) {
-              console.error(`게시글 ${post.id} 좋아요 상태 확인 오류:`, error);
-              likedStatus[post.id] = false;
-            }
-          })
-        );
-        setLikedPosts(prev => ({ ...prev, ...likedStatus }));
-      }
-
-      // 댓글 수 설정
-      const counts = {};
-      newPosts.forEach(post => {
-        counts[post.id] = post.commentsCount || 0;
-      });
-      setCommentsCounts(prev => ({ ...prev, ...counts }));
-
       setLoadingMore(false);
+
+      // DOM 업데이트 완료 후 스크롤 위치 복원
+      setTimeout(() => {
+        const scrollTopAfter = window.pageYOffset || document.documentElement.scrollTop;
+        
+        // 함수 시작 전 스크롤 위치로 복원
+        if (Math.abs(scrollTopAfter - scrollTopStart) > 10) {
+          window.scrollTo({
+            top: scrollTopStart,
+            behavior: 'instant'
+          });
+        }
+      }, 100);
+
     } catch (error) {
       console.error('더보기 로드 오류:', error);
       setLoadingMore(false);
@@ -366,29 +332,39 @@ const Board = ({ filter = 'all' }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [hasMore, loadingMore, lastVisible, loadMorePosts]);
 
-  // 스크롤 위치 저장 및 복원
+  // 스크롤 위치 저장 및 복원 (게시글 상세 페이지에서 돌아왔을 때만)
   useEffect(() => {
-    // 메인 페이지로 돌아왔을 때 스크롤 위치 복원
+    // 게시글 상세 페이지로 이동할 때는 복원 플래그 리셋
+    if (location.pathname.includes('/post/')) {
+      scrollRestoredRef.current = false;
+      return;
+    }
+
+    // 메인 페이지로 돌아왔을 때만 스크롤 위치 복원
+    // (게시글 상세 페이지에서 돌아온 경우에만 실행되도록 조건 강화)
     if (location.pathname === '/' && !loading && posts.length > 0) {
       const savedScroll = sessionStorage.getItem('boardScrollPosition');
+      // sessionStorage에 저장된 스크롤 위치가 있고, 아직 복원하지 않았으며,
+      // 실제로 게시글 상세 페이지에서 돌아온 경우에만 복원
       if (savedScroll && !scrollRestoredRef.current) {
-        scrollRestoredRef.current = true;
-        // DOM이 업데이트된 후 스크롤 복원
-        requestAnimationFrame(() => {
+        const savedScrollValue = parseInt(savedScroll, 10);
+        // 저장된 스크롤 위치가 유효한 경우에만 복원
+        if (savedScrollValue > 0 && savedScrollValue < document.documentElement.scrollHeight) {
+          scrollRestoredRef.current = true;
+          // DOM이 업데이트된 후 스크롤 복원
           requestAnimationFrame(() => {
-            window.scrollTo({
-              top: parseInt(savedScroll, 10),
-              behavior: 'instant'
+            requestAnimationFrame(() => {
+              window.scrollTo({
+                top: savedScrollValue,
+                behavior: 'instant'
+              });
+              scrollRestoredRef.current = false;
             });
-            scrollRestoredRef.current = false;
           });
-        });
+        }
       }
-    } else if (location.pathname.includes('/post/')) {
-      // 게시글 상세 페이지로 이동할 때는 복원 플래그 리셋
-      scrollRestoredRef.current = false;
     }
-  }, [location.pathname, loading, posts.length]);
+  }, [location.pathname, loading]); // posts.length 제거
 
   const handlePostClick = (postId) => {
     // 현재 스크롤 위치 저장

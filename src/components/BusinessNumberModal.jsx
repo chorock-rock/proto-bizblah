@@ -51,6 +51,12 @@ const BusinessNumberModal = ({ onVerify, onClose }) => {
       return;
     }
 
+    // 모든 숫자가 0인지 확인
+    if (numbersOnly === '0000000000') {
+      setError('유효한 사업자 등록 번호를 입력해주세요.');
+      return;
+    }
+
     setIsVerifying(true);
     setError('');
     
