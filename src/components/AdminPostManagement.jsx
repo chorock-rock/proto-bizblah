@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { db } from '../firebase';
-import { collection, query, orderBy, getDocs, getDoc, addDoc, doc, serverTimestamp, setDoc, updateDoc, increment, onSnapshot, where } from 'firebase/firestore';
+import { collection, query, orderBy, getDocs, getDoc, addDoc, doc, serverTimestamp, setDoc, updateDoc, increment, onSnapshot, where, deleteDoc } from 'firebase/firestore';
 import './AdminPostManagement.css';
 
 const AdminPostManagement = () => {
@@ -252,12 +252,32 @@ const AdminPostManagement = () => {
       orderBy('createdAt', 'asc')
     );
 
-    const unsubscribe = onSnapshot(commentsQuery, (snapshot) => {
-      const commentsData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate() || new Date()
-      }));
+    const unsubscribe = onSnapshot(commentsQuery, async (snapshot) => {
+      const commentsData = await Promise.all(
+        snapshot.docs.map(async (commentDoc) => {
+          const commentData = commentDoc.data();
+          
+          // 대댓글 가져오기
+          const repliesQuery = query(
+            collection(db, 'posts', selectedPostId, 'comments', commentDoc.id, 'replies'),
+            orderBy('createdAt', 'asc')
+          );
+          
+          const repliesSnapshot = await getDocs(repliesQuery);
+          const replies = repliesSnapshot.docs.map(replyDoc => ({
+            id: replyDoc.id,
+            ...replyDoc.data(),
+            createdAt: replyDoc.data().createdAt?.toDate() || new Date()
+          }));
+
+          return {
+            id: commentDoc.id,
+            ...commentData,
+            createdAt: commentData.createdAt?.toDate() || new Date(),
+            replies: replies || []
+          };
+        })
+      );
       setComments(commentsData);
       setCommentsLoading(false);
     }, (error) => {
@@ -506,6 +526,82 @@ const AdminPostManagement = () => {
     } catch (error) {
       console.error('대댓글 생성 오류:', error);
       setMessage('대댓글 생성 중 오류가 발생했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 댓글 삭제
+  const handleDeleteComment = async (postId, commentId) => {
+    if (!window.confirm('정말 이 댓글을 삭제하시겠습니까? 대댓글도 함께 삭제됩니다.')) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setMessage('');
+
+      // 댓글의 모든 대댓글 가져오기
+      const repliesQuery = query(
+        collection(db, 'posts', postId, 'comments', commentId, 'replies')
+      );
+      const repliesSnapshot = await getDocs(repliesQuery);
+      const repliesCount = repliesSnapshot.docs.length;
+
+      // 모든 대댓글 삭제
+      const deleteRepliesPromises = repliesSnapshot.docs.map(replyDoc =>
+        deleteDoc(doc(db, 'posts', postId, 'comments', commentId, 'replies', replyDoc.id))
+      );
+      await Promise.all(deleteRepliesPromises);
+
+      // 댓글 삭제
+      await deleteDoc(doc(db, 'posts', postId, 'comments', commentId));
+
+      // 게시글의 댓글 수 감소 (댓글 1개 + 대댓글 수)
+      const totalCountToDecrease = 1 + repliesCount;
+      await updateDoc(
+        doc(db, 'posts', postId),
+        {
+          commentsCount: increment(-totalCountToDecrease)
+        }
+      );
+
+      setMessage(`댓글 삭제 완료 (댓글 1개, 대댓글 ${repliesCount}개 삭제)`);
+      // 댓글 목록은 onSnapshot으로 자동 업데이트됨
+    } catch (error) {
+      console.error('댓글 삭제 오류:', error);
+      setMessage('댓글 삭제 중 오류가 발생했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 대댓글 삭제
+  const handleDeleteReply = async (postId, commentId, replyId) => {
+    if (!window.confirm('정말 이 대댓글을 삭제하시겠습니까?')) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setMessage('');
+
+      // 대댓글 삭제
+      await deleteDoc(doc(db, 'posts', postId, 'comments', commentId, 'replies', replyId));
+
+      // 게시글의 댓글 수 감소
+      await updateDoc(
+        doc(db, 'posts', postId),
+        {
+          commentsCount: increment(-1)
+        }
+      );
+
+      setMessage('대댓글 삭제 완료');
+      // 댓글 목록은 onSnapshot으로 자동 업데이트됨
+    } catch (error) {
+      console.error('대댓글 삭제 오류:', error);
+      setMessage('대댓글 삭제 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
@@ -760,6 +856,124 @@ const AdminPostManagement = () => {
           >
             {loading ? '생성 중...' : '댓글 생성'}
           </button>
+        </div>
+
+        {/* 댓글 관리 */}
+        <div className="admin-post-management-section">
+          <h3 className="section-title">댓글 관리</h3>
+          <p className="section-description">
+            게시글을 선택하여 댓글과 대댓글을 확인하고 삭제할 수 있습니다.
+          </p>
+          <div className="form-group">
+            <label htmlFor="managePostSelect">게시글 선택</label>
+            {postsLoading ? (
+              <div className="loading">게시글 로딩 중...</div>
+            ) : (
+              <select
+                id="managePostSelect"
+                value={selectedPostId}
+                onChange={(e) => setSelectedPostId(e.target.value)}
+                disabled={loading}
+                className="select-input"
+              >
+                <option value="">게시글을 선택하세요</option>
+                {posts.map(post => (
+                  <option key={post.id} value={post.id}>
+                    {post.title} ({post.authorName || '익명'})
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+          {selectedPostId && (
+            <div className="comments-list-container" style={{ marginTop: '20px' }}>
+              {commentsLoading ? (
+                <div className="loading">댓글 로딩 중...</div>
+              ) : comments.length === 0 ? (
+                <div className="info-message">댓글이 없습니다.</div>
+              ) : (
+                <div className="comments-list">
+                  {comments.map(comment => (
+                    <div key={comment.id} className="comment-item" style={{ 
+                      border: '1px solid #ddd', 
+                      borderRadius: '8px', 
+                      padding: '12px', 
+                      marginBottom: '12px',
+                      backgroundColor: '#f9f9f9'
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                        <div style={{ flex: 1 }}>
+                          <strong>{comment.authorName || '익명'}</strong>
+                          <span style={{ color: '#666', marginLeft: '8px', fontSize: '0.9em' }}>
+                            {comment.createdAt?.toLocaleString('ko-KR') || ''}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => handleDeleteComment(selectedPostId, comment.id)}
+                          disabled={loading}
+                          className="delete-button"
+                          style={{
+                            backgroundColor: '#dc3545',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            padding: '6px 12px',
+                            cursor: loading ? 'not-allowed' : 'pointer',
+                            fontSize: '0.9em'
+                          }}
+                        >
+                          삭제
+                        </button>
+                      </div>
+                      <div style={{ marginBottom: '8px', color: '#333' }}>
+                        {comment.content}
+                      </div>
+                      {comment.replies && comment.replies.length > 0 && (
+                        <div style={{ marginLeft: '20px', marginTop: '8px', borderLeft: '2px solid #ddd', paddingLeft: '12px' }}>
+                          {comment.replies.map(reply => (
+                            <div key={reply.id} style={{ 
+                              marginBottom: '8px', 
+                              padding: '8px',
+                              backgroundColor: '#fff',
+                              borderRadius: '4px'
+                            }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
+                                <div style={{ flex: 1 }}>
+                                  <strong style={{ fontSize: '0.9em' }}>{reply.authorName || '익명'}</strong>
+                                  <span style={{ color: '#666', marginLeft: '8px', fontSize: '0.85em' }}>
+                                    {reply.createdAt?.toLocaleString('ko-KR') || ''}
+                                  </span>
+                                </div>
+                                <button
+                                  onClick={() => handleDeleteReply(selectedPostId, comment.id, reply.id)}
+                                  disabled={loading}
+                                  className="delete-button"
+                                  style={{
+                                    backgroundColor: '#dc3545',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    padding: '4px 8px',
+                                    cursor: loading ? 'not-allowed' : 'pointer',
+                                    fontSize: '0.85em'
+                                  }}
+                                >
+                                  삭제
+                                </button>
+                              </div>
+                              <div style={{ fontSize: '0.9em', color: '#555' }}>
+                                {reply.content}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* 대댓글 생성 */}
