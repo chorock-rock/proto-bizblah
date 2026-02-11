@@ -21,13 +21,31 @@ export const AuthProvider = ({ children }) => {
     // 로컬 스토리지에서 브랜드 정보 불러오기 (로그인 전용)
     return localStorage.getItem('selectedBrand') || null;
   });
+  const [selectedBrandName, setSelectedBrandName] = useState(null);
   const [loading, setLoading] = useState(true);
   const [profileLoading, setProfileLoading] = useState(false);
 
   // 브랜드 선택 저장 (로그인 전에만 사용)
-  const selectBrand = (brand) => {
+  const selectBrand = async (brand) => {
     setSelectedBrand(brand);
     localStorage.setItem('selectedBrand', brand);
+    
+    // 브랜드 ID로 브랜드 이름 가져오기
+    if (brand) {
+      try {
+        const brandDoc = await getDoc(doc(db, 'brands', brand));
+        if (brandDoc.exists()) {
+          setSelectedBrandName(brandDoc.data().name);
+        } else {
+          setSelectedBrandName(null);
+        }
+      } catch (error) {
+        console.error('브랜드 이름 가져오기 오류:', error);
+        setSelectedBrandName(null);
+      }
+    } else {
+      setSelectedBrandName(null);
+    }
   };
 
   // Google 로그인
@@ -105,9 +123,13 @@ export const AuthProvider = ({ children }) => {
       return userProfile.brand;
     }
     
-    // userProfile이 없거나 브랜드가 없으면 '점주' 반환
-    // (selectedBrand는 브랜드 ID이므로 직접 사용 불가)
-    return '점주';
+    // selectedBrandName이 있으면 사용 (로그인 전 브랜드 선택 시)
+    if (selectedBrandName) {
+      return selectedBrandName;
+    }
+    
+    // 둘 다 없으면 null 반환
+    return null;
   };
 
   // 사용자 프로필 가져오기
@@ -198,6 +220,29 @@ export const AuthProvider = ({ children }) => {
     }
     return '익명';
   };
+
+  // selectedBrand 변경 시 브랜드 이름 가져오기
+  useEffect(() => {
+    const loadBrandName = async () => {
+      if (selectedBrand && !userProfile?.brand) {
+        try {
+          const brandDoc = await getDoc(doc(db, 'brands', selectedBrand));
+          if (brandDoc.exists()) {
+            setSelectedBrandName(brandDoc.data().name);
+          } else {
+            setSelectedBrandName(null);
+          }
+        } catch (error) {
+          console.error('브랜드 이름 가져오기 오류:', error);
+          setSelectedBrandName(null);
+        }
+      } else if (!selectedBrand) {
+        setSelectedBrandName(null);
+      }
+    };
+
+    loadBrandName();
+  }, [selectedBrand, userProfile]);
 
   // 인증 상태 변경 감지
   useEffect(() => {

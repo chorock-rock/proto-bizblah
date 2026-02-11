@@ -48,7 +48,7 @@ const Login = () => {
       <div className="login-card">
         <div className="login-content">
           <h1 className="login-greeting">
-            {selectedBrand ? `${getBrandLabel()} 점주님, 안녕하세요.` : '점주님, 안녕하세요.'}
+            {selectedBrand && getBrandLabel() ? `${getBrandLabel()} 점주님, 안녕하세요.` : '안녕하세요.'}
           </h1>
           
           <p className="login-description">

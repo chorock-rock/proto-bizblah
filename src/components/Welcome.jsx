@@ -17,7 +17,7 @@ const Welcome = ({ onStart }) => {
             프랜차이즈 운영의 모든 질문을
           </p>
           <p className="welcome-text">
-            <span className="highlight">점주끼리 실시간</span>으로 나눕니다.
+            <span className="highlight">점주님끼리 실시간</span>으로 나눕니다.
           </p>
         </div>
 
