@@ -18,7 +18,7 @@
   border-radius: 12px;
   width: 100%;
   max-width: 800px;
-  max-height: 90vh;
+  max-height: 98vh;
   display: flex;
   flex-direction: column;
   box-shadow: var(--shadow-lg);
@@ -286,7 +286,7 @@
 
 .post-detail-body {
   font-size: 16px;
-  line-height: 1.8;
+  line-height: 1.6;
   color: var(--color-text-primary);
   white-space: pre-wrap;
   margin-bottom: 20px;
