@@ -21,7 +21,16 @@ const Board = ({ filter = 'all' }) => {
   const [animatingPosts, setAnimatingPosts] = useState({}); // { postId: true/false }
   const [commentsCounts, setCommentsCounts] = useState({}); // { postId: totalCount }
   const scrollRestoredRef = useRef(false);
+  const [boardFilter, setBoardFilter] = useState(() => {
+    // localStorage에서 저장된 필터 값 불러오기
+    return localStorage.getItem('boardFilter') || 'all';
+  });
   const POSTS_PER_PAGE = 10;
+
+  // boardFilter 변경 시 localStorage에 저장
+  useEffect(() => {
+    localStorage.setItem('boardFilter', boardFilter);
+  }, [boardFilter]);
 
   // 게시글 좋아요 수 실시간 업데이트 (첫 페이지만)
   useEffect(() => {
@@ -75,7 +84,26 @@ const Board = ({ filter = 'all' }) => {
             orderBy('createdAt', 'desc'),
             limit(POSTS_PER_PAGE)
           );
+        } else if (filter === 'all' && boardFilter === 'brand' && currentUser) {
+          // 내 브랜드 게시판: 현재 사용자의 브랜드와 같은 게시글만
+          const userBrand = getBrandLabel();
+          if (userBrand && userBrand !== '점주' && userBrand !== null) {
+            postsQuery = query(
+              collection(db, 'posts'),
+              where('authorBrand', '==', userBrand),
+              orderBy('createdAt', 'desc'),
+              limit(POSTS_PER_PAGE)
+            );
+          } else {
+            // 브랜드가 없으면 전체 게시글 표시
+            postsQuery = query(
+              collection(db, 'posts'),
+              orderBy('createdAt', 'desc'),
+              limit(POSTS_PER_PAGE)
+            );
+          }
         } else {
+          // 전체 게시판
           postsQuery = query(
             collection(db, 'posts'),
             orderBy('createdAt', 'desc'),
@@ -151,7 +179,7 @@ const Board = ({ filter = 'all' }) => {
     };
 
     loadInitialPosts();
-  }, [filter, currentUser]);
+  }, [filter, currentUser, boardFilter]);
 
   // 새 게시글 실시간 구독 (첫 페이지에만 추가)
   useEffect(() => {
@@ -167,7 +195,26 @@ const Board = ({ filter = 'all' }) => {
         orderBy('createdAt', 'desc'),
         limit(1)
       );
+    } else if (filter === 'all' && boardFilter === 'brand' && currentUser) {
+      // 내 브랜드 게시판: 현재 사용자의 브랜드와 같은 게시글만
+      const userBrand = getBrandLabel();
+      if (userBrand && userBrand !== '점주' && userBrand !== null) {
+        postsQuery = query(
+          collection(db, 'posts'),
+          where('authorBrand', '==', userBrand),
+          orderBy('createdAt', 'desc'),
+          limit(1)
+        );
+      } else {
+        // 브랜드가 없으면 전체 게시글 표시
+        postsQuery = query(
+          collection(db, 'posts'),
+          orderBy('createdAt', 'desc'),
+          limit(1)
+        );
+      }
     } else {
+      // 전체 게시판
       postsQuery = query(
         collection(db, 'posts'),
         orderBy('createdAt', 'desc'),
@@ -216,7 +263,7 @@ const Board = ({ filter = 'all' }) => {
     });
 
     return () => unsubscribe();
-  }, [filter, currentUser]);
+  }, [filter, currentUser, boardFilter]);
 
 
   // 더보기 핸들러 (useCallback으로 메모이제이션)
@@ -238,7 +285,28 @@ const Board = ({ filter = 'all' }) => {
           startAfter(lastVisible),
           limit(POSTS_PER_PAGE)
         );
+      } else if (filter === 'all' && boardFilter === 'brand' && currentUser) {
+        // 내 브랜드 게시판: 현재 사용자의 브랜드와 같은 게시글만
+        const userBrand = getBrandLabel();
+        if (userBrand && userBrand !== '점주' && userBrand !== null) {
+          postsQuery = query(
+            collection(db, 'posts'),
+            where('authorBrand', '==', userBrand),
+            orderBy('createdAt', 'desc'),
+            startAfter(lastVisible),
+            limit(POSTS_PER_PAGE)
+          );
+        } else {
+          // 브랜드가 없으면 전체 게시글 표시
+          postsQuery = query(
+            collection(db, 'posts'),
+            orderBy('createdAt', 'desc'),
+            startAfter(lastVisible),
+            limit(POSTS_PER_PAGE)
+          );
+        }
       } else {
+        // 전체 게시판
         postsQuery = query(
           collection(db, 'posts'),
           orderBy('createdAt', 'desc'),
@@ -291,7 +359,7 @@ const Board = ({ filter = 'all' }) => {
       console.error('더보기 로드 오류:', error);
       setLoadingMore(false);
     }
-  }, [hasMore, loadingMore, lastVisible, filter, currentUser]);
+  }, [hasMore, loadingMore, lastVisible, filter, currentUser, boardFilter]);
 
   const formatDate = (date) => {
     const now = new Date();
@@ -442,6 +510,23 @@ const Board = ({ filter = 'all' }) => {
   return (
     <>
       <div className="board-container">
+        {/* 탭 (홈 게시판일 때만 표시) */}
+        {filter === 'all' && (
+          <div className="board-tabs">
+            <button
+              className={`board-tab ${boardFilter === 'all' ? 'active' : ''}`}
+              onClick={() => setBoardFilter('all')}
+            >
+              전체 게시판
+            </button>
+            <button
+              className={`board-tab ${boardFilter === 'brand' ? 'active' : ''}`}
+              onClick={() => setBoardFilter('brand')}
+            >
+              {getBrandLabel() ? `${getBrandLabel()} 게시판` : '내 브랜드 게시판'}
+            </button>
+          </div>
+        )}
         <div className="board-content">
           {loading ? (
             <div className="empty-board">
@@ -452,10 +537,12 @@ const Board = ({ filter = 'all' }) => {
               <p>
                 {filter === 'my' 
                   ? '작성한 게시글이 없습니다.' 
+                  : filter === 'all' && boardFilter === 'brand'
+                  ? '내 브랜드 게시글이 없습니다.'
                   : '아직 게시글이 없습니다.'
                 }
               </p>
-              {filter === 'all' && (
+              {filter === 'all' && boardFilter === 'all' && (
                 <p>첫 번째 게시글을 작성해보세요!</p>
               )}
             </div>

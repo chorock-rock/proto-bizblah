@@ -4,6 +4,36 @@
   padding: 32px 20px;
 }
 
+.board-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.board-tab {
+  padding: 12px 24px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-size: 16px;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: -2px;
+}
+
+.board-tab:hover {
+  color: #ED4E39;
+}
+
+.board-tab.active {
+  color: #ED4E39;
+  border-bottom-color: #ED4E39;
+  font-weight: 600;
+}
+
 /* 플로팅 글쓰기 버튼 */
 .floating-write-button {
   position: fixed;

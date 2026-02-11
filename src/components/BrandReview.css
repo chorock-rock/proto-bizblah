@@ -259,6 +259,22 @@
   padding-top: 56px;
 }
 
+.review-form-title {
+  margin-bottom: 8px;
+}
+
+.review-form-title h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 8px 0;
+}
+
+.review-form-subtitle {
+  font-size: 14px;
+  margin: 0;
+}
+
 .form-title {
   font-size: 20px;
   font-weight: 600;

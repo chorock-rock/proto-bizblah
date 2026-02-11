@@ -70,7 +70,7 @@ const BrandReview = () => {
     try {
       setLoading(true);
       const brandLabel = getBrandLabel();
-      
+
       // 현재 사용자의 브랜드만 가져오기 (브랜드가 없으면 리턴)
       if (!brandLabel || brandLabel === '점주') {
         setReviews([]);
@@ -254,7 +254,7 @@ const BrandReview = () => {
         setSubmitting(false);
         return;
       }
-      
+
       const authorName = getNickname();
       const reviewData = {
         brand: brandLabel, // 현재 사용자의 브랜드로만 저장
@@ -387,6 +387,7 @@ const BrandReview = () => {
                   setShowCommentForm(false);
                 }}>×</button>
                 <form className="review-form" onSubmit={handleScoreSubmit} onClick={(e) => e.stopPropagation()}>
+                  <p className="review-form-subtitle">{getBrandLabel()}에 대한 평가를 남겨주세요</p>
                   {reviewCategories.map(category => (
                     <div key={category.key} className="form-item">
                       <div className="form-item-row">
@@ -544,6 +545,10 @@ const BrandReview = () => {
                   setShowReviewForm(false);
                 }}>×</button>
                 <form className="review-form" onSubmit={handleSubmitReview}>
+                  <div className="review-form-title">
+                    <h3>{getBrandLabel()} 리뷰 작성</h3>
+                    <p className="review-form-subtitle">{getBrandLabel()}에 대한 추가 의견을 남겨주세요</p>
+                  </div>
                   <div className="form-item">
                     <label className="form-label">하고 싶은 말 (선택사항)</label>
                     <textarea
