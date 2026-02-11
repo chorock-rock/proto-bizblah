@@ -32,6 +32,12 @@ const Board = ({ filter = 'all' }) => {
     localStorage.setItem('boardFilter', boardFilter);
   }, [boardFilter]);
 
+  // 탭 변경 핸들러 (스크롤 맨 위로)
+  const handleTabChange = (newFilter) => {
+    setBoardFilter(newFilter);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   // 게시글 좋아요 수 실시간 업데이트 (첫 페이지만)
   useEffect(() => {
     if (posts.length === 0) return;
@@ -552,13 +558,13 @@ const Board = ({ filter = 'all' }) => {
           <div className="board-tabs">
             <button
               className={`board-tab ${boardFilter === 'all' ? 'active' : ''}`}
-              onClick={() => setBoardFilter('all')}
+              onClick={() => handleTabChange('all')}
             >
               전체 게시판
             </button>
             <button
               className={`board-tab ${boardFilter === 'brand' ? 'active' : ''}`}
-              onClick={() => setBoardFilter('brand')}
+              onClick={() => handleTabChange('brand')}
             >
               {getBrandLabel() ? `${getBrandLabel()} 게시판` : '내 브랜드 게시판'}
             </button>
