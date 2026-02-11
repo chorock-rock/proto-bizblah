@@ -43,11 +43,12 @@
 }
 
 .form-group label {
-  display: block;
   font-weight: 500;
   color: #333;
   margin-bottom: 8px;
   font-size: 14px;
+  display: flex;
+  align-items: center;
 }
 
 .text-input,

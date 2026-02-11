@@ -9,6 +9,7 @@ const PostWrite = ({ onClose, onSuccess }) => {
   const { currentUser, getBrandLabel, getNickname } = useAuth();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [isBrandOnly, setIsBrandOnly] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -43,6 +44,7 @@ const PostWrite = ({ onClose, onSuccess }) => {
         authorId: currentUser.uid,
         authorName: getNickname(),
         authorBrand: getBrandLabel(),
+        isBrandOnly: isBrandOnly, // 내 브랜드에만 보이기 여부
         views: 0,
         likes: 0,
         commentsCount: 0,
@@ -60,6 +62,7 @@ const PostWrite = ({ onClose, onSuccess }) => {
 
       setTitle('');
       setContent('');
+      setIsBrandOnly(false);
       onSuccess?.();
       onClose();
     } catch (err) {
@@ -101,6 +104,18 @@ const PostWrite = ({ onClose, onSuccess }) => {
               rows={10}
               disabled={loading}
             />
+          </div>
+
+          <div className="form-group">
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                checked={isBrandOnly}
+                onChange={(e) => setIsBrandOnly(e.target.checked)}
+                disabled={loading}
+              />
+              <span>{getBrandLabel() ? `${getBrandLabel()}에만 보이기` : '내 브랜드에만 보이기'}</span>
+            </label>
           </div>
           
           <div className="form-actions">

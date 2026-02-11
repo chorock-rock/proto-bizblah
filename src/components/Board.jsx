@@ -112,11 +112,26 @@ const Board = ({ filter = 'all' }) => {
         }
 
         const snapshot = await getDocs(postsQuery);
-        const postsData = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-          createdAt: doc.data().createdAt?.toDate() || new Date()
-        }));
+        const userBrand = getBrandLabel();
+        const postsData = snapshot.docs
+          .map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+            createdAt: doc.data().createdAt?.toDate() || new Date()
+          }))
+          .filter(post => {
+            // isBrandOnly가 true인 게시글은 전체 게시판에서는 보이지 않음
+            if (post.isBrandOnly === true) {
+              // 전체 게시판에서는 아예 표시하지 않음
+              if (filter === 'all' && boardFilter === 'all') {
+                return false;
+              }
+              // 내 브랜드 게시판에서는 해당 브랜드 게시글만 가져오므로 모두 표시
+              return true;
+            }
+            // isBrandOnly가 false이거나 없는 게시글은 모두 표시
+            return true;
+          });
 
         setPosts(postsData);
         
@@ -231,6 +246,13 @@ const Board = ({ filter = 'all' }) => {
           createdAt: newPostDoc.data().createdAt?.toDate() || new Date()
         };
 
+        // isBrandOnly 필터링 적용
+        const shouldShowPost = newPost.isBrandOnly === true
+          ? (filter === 'all' && boardFilter === 'all' ? false : true) // 전체 게시판에서는 아예 표시하지 않음
+          : true;
+
+        if (!shouldShowPost) return;
+
         // 이미 존재하는 게시글이면 무시
         setPosts(prevPosts => {
           const exists = prevPosts.some(p => p.id === newPost.id);
@@ -316,11 +338,26 @@ const Board = ({ filter = 'all' }) => {
       }
 
       const snapshot = await getDocs(postsQuery);
-      const newPosts = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate() || new Date()
-      }));
+      const userBrand = getBrandLabel();
+      const newPosts = snapshot.docs
+        .map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          createdAt: doc.data().createdAt?.toDate() || new Date()
+        }))
+        .filter(post => {
+          // isBrandOnly가 true인 게시글은 전체 게시판에서는 보이지 않음
+          if (post.isBrandOnly === true) {
+            // 전체 게시판에서는 아예 표시하지 않음
+            if (filter === 'all' && boardFilter === 'all') {
+              return false;
+            }
+            // 내 브랜드 게시판에서는 해당 브랜드 게시글만 가져오므로 모두 표시
+            return true;
+          }
+          // isBrandOnly가 false이거나 없는 게시글은 모두 표시
+          return true;
+        });
 
       // 댓글 수 설정
       const counts = {};
