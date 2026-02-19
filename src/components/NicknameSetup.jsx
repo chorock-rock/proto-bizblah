@@ -11,25 +11,18 @@ const NicknameSetup = ({ onComplete }) => {
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState('');
 
-  // 닉네임 생성용 영어 단어 목록 (다양한 랜덤 단어)
-  const words = [
-    'zap', 'blip', 'flip', 'snap', 'pop', 'bop', 'hop', 'zip',
-    'wiz', 'buzz', 'fizz', 'jazz', 'jolt', 'bolt', 'volt', 'zest',
-    'blink', 'twink', 'spark', 'flash', 'dash', 'crash', 'smash', 'splash',
-    'zoom', 'boom', 'doom', 'gloom', 'bloom', 'room', 'loom', 'broom',
-    'chip', 'clip', 'flip', 'grip', 'skip', 'slip', 'trip', 'whip',
-    'blob', 'glob', 'slob', 'snob', 'knob', 'mob', 'rob', 'sob',
-    'flap', 'clap', 'slap', 'snap', 'trap', 'wrap', 'scrap', 'strap',
-    'blink', 'clink', 'drink', 'link', 'pink', 'sink', 'think', 'wink',
-    'blot', 'clot', 'plot', 'slot', 'spot', 'tot', 'dot', 'hot',
-    'blur', 'slur', 'spur', 'stir', 'fir', 'sir', 'fur', 'purr',
-    'blip', 'clip', 'dip', 'flip', 'grip', 'hip', 'lip', 'rip',
-    'blob', 'cob', 'gob', 'job', 'lob', 'mob', 'rob', 'sob',
-    'blot', 'clot', 'dot', 'got', 'hot', 'jot', 'lot', 'not',
-    'blur', 'cur', 'fur', 'her', 'purr', 'sir', 'stir', 'whir',
-    'blip', 'dip', 'flip', 'grip', 'hip', 'kip', 'lip', 'nip',
-    'blob', 'cob', 'gob', 'job', 'lob', 'mob', 'rob', 'sob'
-  ];
+  // s5j2d1r0 형식: 영문 한 글자 + 숫자 교차 (8자)
+  const generateLetterNumberNickname = () => {
+    const letters = 'abcdefghijklmnopqrstuvwxyz';
+    const numbers = '0123456789';
+    let result = '';
+    for (let i = 0; i < 8; i++) {
+      result += i % 2 === 0
+        ? letters[Math.floor(Math.random() * letters.length)]
+        : numbers[Math.floor(Math.random() * numbers.length)];
+    }
+    return result;
+  };
 
   // 고유한 닉네임 생성 함수
   const generateUniqueNickname = async () => {
@@ -41,10 +34,7 @@ const NicknameSetup = ({ onComplete }) => {
       const maxAttempts = 50;
 
       while (attempts < maxAttempts) {
-        // 영어 단어 + 숫자 조합
-        const randomWord = words[Math.floor(Math.random() * words.length)];
-        const randomNumber = Math.floor(Math.random() * 9999) + 1;
-        const generatedNickname = `${randomWord}${randomNumber}`;
+        const generatedNickname = generateLetterNumberNickname();
 
         // 중복 확인
         const nicknameCheck = await getDoc(doc(db, 'nicknames', generatedNickname));
@@ -58,10 +48,10 @@ const NicknameSetup = ({ onComplete }) => {
         attempts++;
       }
 
-      // 최대 시도 횟수 초과 시 타임스탬프 추가
-      const randomWord = words[Math.floor(Math.random() * words.length)];
-      const timestamp = Date.now().toString().slice(-6);
-      const generatedNickname = `${randomWord}${timestamp}`;
+      // 최대 시도 횟수 초과 시 패턴 확장 (s5j2d1r0x9)
+      const base = generateLetterNumberNickname();
+      const letters = 'abcdefghijklmnopqrstuvwxyz';
+      const generatedNickname = base + letters[Math.floor(Math.random() * 26)] + Math.floor(Math.random() * 10);
       
       setNickname(generatedNickname);
       setGenerating(false);

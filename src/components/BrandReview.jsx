@@ -626,13 +626,14 @@ const BrandReview = () => {
                     <div className="review-author">{review.authorName || '익명'}</div>
                     <div className="review-date">{formatDate(review.createdAt)}</div>
                   </div>
-                  <div className="review-card-average">
-                    <div className="review-average-score">{(reviewAverage || 0).toFixed(1)}</div>
-                    <div className="review-average-stars">
-                      {renderStars(reviewAverage || 0)}
+                  <div className="review-card-content">
+                    <div className="review-card-average">
+                      <div className="review-average-score">{(reviewAverage || 0).toFixed(1)}</div>
+                      <div className="review-average-stars">
+                        {renderStars(reviewAverage || 0)}
+                      </div>
                     </div>
-                  </div>
-                  <div className="review-card-details">
+                    <div className="review-card-details">
                     {reviewCategories.map(category => (
                       <div key={category.key} className="review-card-item">
                         <span className="review-card-label">{category.label}</span>
@@ -641,6 +642,7 @@ const BrandReview = () => {
                         </div>
                       </div>
                     ))}
+                    </div>
                   </div>
                   {review.comment && (
                     <div className="review-card-comment">

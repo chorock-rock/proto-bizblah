@@ -104,8 +104,6 @@
 
 .brand-search-input:focus {
   outline: none;
-  border-color: #ED4E39;
-  box-shadow: 0 0 0 3px rgba(237, 78, 57, 0.1);
 }
 
 .brand-search-input:disabled {

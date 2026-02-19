@@ -34,8 +34,14 @@ const Board = ({ filter = 'all' }) => {
 
   // 탭 변경 핸들러 (스크롤 맨 위로)
   const handleTabChange = (newFilter) => {
+    // sessionStorage의 스크롤 위치 초기화 (로컬 스토리지 로직과 충돌 방지)
+    sessionStorage.removeItem('boardScrollPosition');
+    // 탭 변경 플래그 설정 (스크롤 복원 방지)
+    scrollRestoredRef.current = false;
+    
+    // 즉시 스크롤을 맨 위로 이동 (smooth 대신 instant 사용)
+    window.scrollTo({ top: 0, behavior: 'instant' });
     setBoardFilter(newFilter);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // 게시글 좋아요 수 실시간 업데이트 (첫 페이지만)
@@ -75,6 +81,9 @@ const Board = ({ filter = 'all' }) => {
 
   // 초기 게시글 로드 (첫 10개)
   useEffect(() => {
+    // boardFilter가 변경된 경우 스크롤 복원 비활성화
+    const isTabChange = scrollRestoredRef.current === false;
+    
     if (!currentUser && filter === 'my') {
       setPosts([]);
       setLoading(false);
@@ -207,6 +216,14 @@ const Board = ({ filter = 'all' }) => {
         setCommentsCounts(counts);
         
         setLoading(false);
+        
+        // 탭 변경으로 인한 로드인 경우 스크롤을 맨 위로 유지 (DOM 업데이트 완료 후)
+        // boardFilter가 변경된 직후에는 스크롤 복원하지 않음
+        if (scrollRestoredRef.current === false) {
+          setTimeout(() => {
+            window.scrollTo({ top: 0, behavior: 'instant' });
+          }, 0);
+        }
       } catch (error) {
         console.error('게시글 로드 오류:', error);
         if (error.code === 'failed-precondition') {
@@ -509,7 +526,8 @@ const Board = ({ filter = 'all' }) => {
 
     // 메인 페이지로 돌아왔을 때만 스크롤 위치 복원
     // (게시글 상세 페이지에서 돌아온 경우에만 실행되도록 조건 강화)
-    if (location.pathname === '/' && !loading && posts.length > 0) {
+    // 탭 변경으로 인한 로드는 제외 (scrollRestoredRef.current가 false인 경우는 탭 변경)
+    if (location.pathname === '/' && !loading && posts.length > 0 && scrollRestoredRef.current !== false) {
       const savedScroll = sessionStorage.getItem('boardScrollPosition');
       // sessionStorage에 저장된 스크롤 위치가 있고, 아직 복원하지 않았으며,
       // 실제로 게시글 상세 페이지에서 돌아온 경우에만 복원

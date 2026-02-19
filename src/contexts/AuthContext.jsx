@@ -3,7 +3,8 @@ import {
   signInWithPopup, 
   signOut, 
   onAuthStateChanged,
-  deleteUser
+  deleteUser,
+  reauthenticateWithPopup
 } from 'firebase/auth';
 import { auth, googleProvider, db } from '../firebase';
 import { doc, getDoc, deleteDoc, collection, query, where, getDocs } from 'firebase/firestore';
@@ -83,6 +84,9 @@ export const AuthProvider = ({ children }) => {
       if (!currentUser) {
         throw new Error('로그인이 필요합니다.');
       }
+
+      // 계정 삭제 전 재인증 (토큰 만료로 인한 400 에러 방지)
+      await reauthenticateWithPopup(currentUser, googleProvider);
 
       const userId = currentUser.uid;
       

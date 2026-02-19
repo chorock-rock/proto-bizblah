@@ -182,7 +182,7 @@
 }
 
 .brand-search-input-wrapper:focus-within {
-  border-color: #ED4E39;
+  border-color: none;
 }
 
 .brand-search-input-wrapper input {
